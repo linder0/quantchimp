@@ -2,7 +2,7 @@
 //  SplashView.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Splash screen using Theme tokens
 //
 
 import SwiftUI
@@ -16,22 +16,15 @@ struct SplashView: View {
     var body: some View {
         ZStack {
             // Background gradient
-            LinearGradient(
-                colors: [
-                    Color(red: 0.12, green: 0.10, blue: 0.18),
-                    Color(red: 0.08, green: 0.06, blue: 0.12)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            Theme.backgroundGradient
+                .ignoresSafeArea()
 
             // Floating math symbols background
             GeometryReader { geo in
                 ForEach(0..<12, id: \.self) { i in
                     Text(["π", "∑", "∫", "√", "∞", "÷", "×", "+", "−", "=", "%", "Δ"][i])
                         .font(.system(size: CGFloat.random(in: 20...40)))
-                        .foregroundColor(.orange.opacity(0.15))
+                        .foregroundColor(Theme.accent.opacity(0.15))
                         .position(
                             x: CGFloat.random(in: 0...geo.size.width),
                             y: CGFloat.random(in: 0...geo.size.height)
@@ -46,19 +39,12 @@ struct SplashView: View {
                 }
             }
 
-            VStack(spacing: 24) {
+            VStack(spacing: Spacing.lg) {
                 // Chimp emoji with banana orbit
                 ZStack {
                     // Pulsing ring
                     Circle()
-                        .stroke(
-                            LinearGradient(
-                                colors: [.orange, .yellow],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 3
-                        )
+                        .stroke(Theme.accentGradient, lineWidth: 3)
                         .frame(width: 140, height: 140)
                         .scaleEffect(pulseScale)
                         .opacity(2 - pulseScale)
@@ -80,33 +66,27 @@ struct SplashView: View {
                 }
                 .frame(width: 160, height: 160)
 
-                VStack(spacing: 8) {
+                VStack(spacing: Spacing.sm) {
                     // App name
                     Text("quantchimp")
-                        .font(.system(size: 38, weight: .black, design: .rounded))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.orange, .yellow],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
+                        .font(Typography.displaySmall)
+                        .foregroundStyle(Theme.accentGradient)
                         .opacity(isAnimating ? 1 : 0)
                         .offset(y: isAnimating ? 0 : 10)
 
                     // Tagline
                     Text("Math skills, leveled up")
-                        .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundColor(.white.opacity(0.6))
+                        .font(Typography.body)
+                        .foregroundColor(Theme.textSecondary)
                         .opacity(showSubtitle ? 1 : 0)
                         .offset(y: showSubtitle ? 0 : 5)
                 }
 
                 // Loading dots
-                HStack(spacing: 8) {
+                HStack(spacing: Spacing.sm) {
                     ForEach(0..<3, id: \.self) { i in
                         Circle()
-                            .fill(Color.orange)
+                            .fill(Theme.accent)
                             .frame(width: 8, height: 8)
                             .scaleEffect(isAnimating ? 1 : 0.5)
                             .animation(
@@ -117,7 +97,7 @@ struct SplashView: View {
                             )
                     }
                 }
-                .padding(.top, 32)
+                .padding(.top, Spacing.xl)
             }
         }
         .onAppear {

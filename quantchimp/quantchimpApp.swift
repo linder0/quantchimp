@@ -2,7 +2,7 @@
 //  quantchimpApp.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  App entry point with Theme configuration
 //
 
 import SwiftUI
@@ -14,12 +14,8 @@ struct quantchimpApp: App {
     @State private var isLoading = true
 
     init() {
-        // Force traditional tab bar appearance
-        let tabBarAppearance = UITabBarAppearance()
-        tabBarAppearance.configureWithOpaqueBackground()
-        tabBarAppearance.backgroundColor = .systemBackground
-        UITabBar.appearance().standardAppearance = tabBarAppearance
-        UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+        // Configure appearance for dark theme
+        configureAppearance()
     }
 
     var body: some Scene {
@@ -43,6 +39,7 @@ struct quantchimpApp: App {
                         .transition(.opacity.combined(with: .scale(scale: 1.1)))
                 }
             }
+            .preferredColorScheme(.dark) // Force dark mode for premium feel
             .onAppear {
                 // Give the app time to fully mount
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
@@ -52,5 +49,37 @@ struct quantchimpApp: App {
                 }
             }
         }
+    }
+
+    private func configureAppearance() {
+        // Tab bar appearance
+        let tabBarAppearance = UITabBarAppearance()
+        tabBarAppearance.configureWithOpaqueBackground()
+        tabBarAppearance.backgroundColor = UIColor(Theme.surface)
+        UITabBar.appearance().standardAppearance = tabBarAppearance
+        UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+
+        // Navigation bar appearance
+        let navBarAppearance = UINavigationBarAppearance()
+        navBarAppearance.configureWithOpaqueBackground()
+        navBarAppearance.backgroundColor = UIColor(Theme.surface)
+        navBarAppearance.titleTextAttributes = [
+            .foregroundColor: UIColor(Theme.textPrimary)
+        ]
+        navBarAppearance.largeTitleTextAttributes = [
+            .foregroundColor: UIColor(Theme.textPrimary)
+        ]
+        UINavigationBar.appearance().standardAppearance = navBarAppearance
+        UINavigationBar.appearance().scrollEdgeAppearance = navBarAppearance
+        UINavigationBar.appearance().compactAppearance = navBarAppearance
+
+        // Segmented control tint
+        UISegmentedControl.appearance().selectedSegmentTintColor = UIColor(Theme.accent)
+        UISegmentedControl.appearance().setTitleTextAttributes([
+            .foregroundColor: UIColor(Theme.background)
+        ], for: .selected)
+        UISegmentedControl.appearance().setTitleTextAttributes([
+            .foregroundColor: UIColor(Theme.textPrimary)
+        ], for: .normal)
     }
 }

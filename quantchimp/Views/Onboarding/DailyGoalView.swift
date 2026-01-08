@@ -2,7 +2,7 @@
 //  DailyGoalView.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Daily goal onboarding using Theme tokens
 //
 
 import SwiftUI
@@ -27,52 +27,50 @@ struct DailyGoalView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 32) {
+            VStack(spacing: Spacing.xl) {
                 // Header
-                VStack(spacing: 12) {
+                VStack(spacing: Spacing.smd) {
                     Text("Set Your Daily Goal")
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .font(Typography.heading1)
+                        .foregroundColor(Theme.textPrimary)
 
                     Text("Consistency is key! Set a realistic daily goal and we'll help you stay on track.")
-                        .font(.body)
-                        .foregroundColor(.secondary)
+                        .font(Typography.body)
+                        .foregroundColor(Theme.textSecondary)
                         .multilineTextAlignment(.center)
-                        .padding(.horizontal, 16)
+                        .padding(.horizontal, Spacing.md)
                 }
-                .padding(.top, 40)
+                .padding(.top, Spacing.xl)
 
                 // Daily minutes section
                 dailyMinutesSection
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, Spacing.lg)
 
                 // Reminder section
                 reminderSection
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, Spacing.lg)
 
                 Spacer(minLength: 100)
             }
         }
+        .scrollIndicators(.hidden)
+        .background(Theme.background)
         .safeAreaInset(edge: .bottom) {
-            VStack(spacing: 12) {
+            VStack(spacing: Spacing.smd) {
                 PrimaryButton(title: "Continue") {
                     saveSettings()
                     onContinue()
                 }
 
-                Button {
+                TertiaryButton(title: "Back") {
                     onBack()
-                } label: {
-                    Text("Back")
-                        .font(.body)
-                        .fontWeight(.medium)
-                        .foregroundColor(.secondary)
                 }
             }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 16)
+            .padding(.horizontal, Spacing.lg)
+            .padding(.vertical, Spacing.md)
             .background(
                 LinearGradient(
-                    colors: [Color(.systemBackground).opacity(0), Color(.systemBackground)],
+                    colors: [Theme.background.opacity(0), Theme.background],
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -80,7 +78,7 @@ struct DailyGoalView: View {
         }
         .opacity(contentOpacity)
         .onAppear {
-            withAnimation(.easeOut(duration: 0.4)) {
+            withAnimation(Motion.ease(Motion.smooth)) {
                 contentOpacity = 1.0
             }
         }
@@ -90,138 +88,126 @@ struct DailyGoalView: View {
     }
 
     private var dailyMinutesSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             Text("Daily Training Time")
-                .font(.headline)
+                .font(Typography.headline)
+                .foregroundColor(Theme.textPrimary)
 
-            VStack(spacing: 16) {
+            VStack(spacing: Spacing.md) {
                 // Visual display
                 ZStack {
                     Circle()
-                        .stroke(Color.gray.opacity(0.2), lineWidth: 12)
+                        .stroke(Theme.surfaceElevated, lineWidth: 12)
                         .frame(width: 140, height: 140)
 
                     Circle()
                         .trim(from: 0, to: CGFloat(dailyMinutes / 30))
-                        .stroke(
-                            LinearGradient(
-                                colors: [.orange, .yellow],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            style: StrokeStyle(lineWidth: 12, lineCap: .round)
-                        )
+                        .stroke(Theme.accentGradient, style: StrokeStyle(lineWidth: 12, lineCap: .round))
                         .frame(width: 140, height: 140)
                         .rotationEffect(.degrees(-90))
-                        .animation(.spring(response: 0.4), value: dailyMinutes)
+                        .animation(Motion.spring, value: dailyMinutes)
 
-                    VStack(spacing: 4) {
+                    VStack(spacing: Spacing.xs) {
                         Text("\(Int(dailyMinutes))")
-                            .font(.system(size: 40, weight: .bold, design: .rounded))
-                            .foregroundColor(.orange)
+                            .font(Typography.displayMedium)
+                            .foregroundColor(Theme.accent)
                         Text("minutes")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(Typography.caption)
+                            .foregroundColor(Theme.textSecondary)
                     }
                 }
                 .frame(maxWidth: .infinity)
 
                 // Option buttons
-                HStack(spacing: 8) {
+                HStack(spacing: Spacing.sm) {
                     ForEach(minuteOptions, id: \.self) { minutes in
                         Button {
-                            withAnimation(.spring(response: 0.3)) {
+                            withAnimation(Motion.spring) {
                                 dailyMinutes = Double(minutes)
                             }
                         } label: {
                             Text("\(minutes)")
-                                .font(.headline)
-                                .foregroundColor(Int(dailyMinutes) == minutes ? .white : .primary)
+                                .font(Typography.headline)
+                                .foregroundColor(Int(dailyMinutes) == minutes ? Theme.background : Theme.textPrimary)
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
+                                .padding(.vertical, Spacing.smd)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Int(dailyMinutes) == minutes ? Color.orange : Color(.systemGray5))
+                                    RoundedRectangle(cornerRadius: Radius.md)
+                                        .fill(Int(dailyMinutes) == minutes ? Theme.accent : Theme.surfaceElevated)
                                 )
                         }
                     }
                 }
             }
-            .padding(20)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(.systemBackground))
-                    .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
-            )
+            .padding(Spacing.lg)
+            .cardStyle(cornerRadius: Radius.lg)
         }
     }
 
     private var reminderSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             Text("Daily Reminder")
-                .font(.headline)
+                .font(Typography.headline)
+                .foregroundColor(Theme.textPrimary)
 
             VStack(spacing: 0) {
                 ForEach(ReminderPreset.allCases) { preset in
                     Button {
-                        withAnimation(.spring(response: 0.3)) {
+                        withAnimation(Motion.spring) {
                             selectedPreset = preset
                             if preset == .custom {
                                 showTimePicker = true
                             }
                         }
                     } label: {
-                        HStack(spacing: 16) {
+                        HStack(spacing: Spacing.md) {
                             Image(systemName: preset.icon)
                                 .font(.title3)
                                 .foregroundColor(presetColor(for: preset))
                                 .frame(width: 28)
 
                             Text(preset.rawValue)
-                                .font(.body)
-                                .foregroundColor(.primary)
+                                .font(Typography.body)
+                                .foregroundColor(Theme.textPrimary)
 
                             Spacer()
 
                             if preset == .custom && selectedPreset == .custom {
                                 Text(formattedCustomTime)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
+                                    .font(Typography.caption)
+                                    .foregroundColor(Theme.textSecondary)
                             } else if preset != .custom && preset != .none {
                                 Text(preset.timeDescription)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
+                                    .font(Typography.caption)
+                                    .foregroundColor(Theme.textSecondary)
                             }
 
                             // Selection indicator
                             ZStack {
                                 Circle()
-                                    .stroke(selectedPreset == preset ? Color.orange : Color.gray.opacity(0.3), lineWidth: 2)
+                                    .stroke(selectedPreset == preset ? Theme.accent : Theme.textTertiary, lineWidth: 2)
                                     .frame(width: 22, height: 22)
 
                                 if selectedPreset == preset {
                                     Circle()
-                                        .fill(Color.orange)
+                                        .fill(Theme.accent)
                                         .frame(width: 12, height: 12)
                                 }
                             }
                         }
-                        .padding(.vertical, 14)
-                        .padding(.horizontal, 16)
+                        .padding(.vertical, Spacing.smd)
+                        .padding(.horizontal, Spacing.md)
                     }
                     .buttonStyle(.plain)
 
                     if preset != ReminderPreset.allCases.last {
                         Divider()
+                            .background(Theme.surfaceBorder)
                             .padding(.leading, 56)
                     }
                 }
             }
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(.systemBackground))
-                    .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
-            )
+            .cardStyle(cornerRadius: Radius.lg)
         }
     }
 
@@ -233,11 +219,11 @@ struct DailyGoalView: View {
 
     private func presetColor(for preset: ReminderPreset) -> Color {
         switch preset {
-        case .morning: return .orange
-        case .afternoon: return .yellow
-        case .evening: return .purple
-        case .custom: return .blue
-        case .none: return .gray
+        case .morning: return Theme.accent
+        case .afternoon: return Theme.xp
+        case .evening: return Theme.level
+        case .custom: return Theme.sprint
+        case .none: return Theme.textTertiary
         }
     }
 
@@ -282,10 +268,11 @@ struct TimePickerSheet: View {
                 )
                 .datePickerStyle(.wheel)
                 .labelsHidden()
-                .padding()
+                .padding(Spacing.md)
 
                 Spacer()
             }
+            .background(Theme.background)
             .navigationTitle("Choose Time")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -293,8 +280,8 @@ struct TimePickerSheet: View {
                     Button("Done") {
                         dismiss()
                     }
-                    .fontWeight(.semibold)
-                    .foregroundColor(.orange)
+                    .font(Typography.headline)
+                    .foregroundColor(Theme.accent)
                 }
             }
         }

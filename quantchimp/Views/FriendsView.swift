@@ -2,7 +2,7 @@
 //  FriendsView.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Friends view using Theme tokens
 //
 
 import SwiftUI
@@ -19,8 +19,8 @@ struct FriendsView: View {
     """
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 32) {
+        ScrollableViewWithHeader(title: "Friends", headerColor: Theme.surfaceElevated) {
+            VStack(spacing: Spacing.xl) {
                 // Empty state illustration
                 emptyStateView
 
@@ -32,22 +32,20 @@ struct FriendsView: View {
 
                 Spacer(minLength: 40)
             }
-            .padding()
+            .padding(Spacing.md)
         }
-        .background(Color(.systemGray6).ignoresSafeArea())
-        .navigationBarHidden(true)
         .sheet(isPresented: $showShareSheet) {
             ShareSheet(activityItems: [inviteMessage])
         }
     }
 
     private var emptyStateView: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: Spacing.lg) {
             ZStack {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [.orange.opacity(0.25), .yellow.opacity(0.15)],
+                            colors: [Theme.accent.opacity(0.25), Theme.xp.opacity(0.15)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -56,56 +54,50 @@ struct FriendsView: View {
 
                 Image(systemName: "person.2.fill")
                     .font(.system(size: 50))
-                    .foregroundColor(.orange)
+                    .foregroundColor(Theme.accent)
             }
 
             Text("No friends yet")
-                .font(.title2)
-                .fontWeight(.bold)
+                .font(Typography.heading2)
+                .foregroundColor(Theme.textPrimary)
 
             Text("Invite your friends to compete and compare stats!")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+                .font(Typography.body)
+                .foregroundColor(Theme.textSecondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
+                .padding(.horizontal, Spacing.xl)
         }
-        .padding(.top, 40)
+        .padding(.top, Spacing.xl)
     }
 
     private var inviteButton: some View {
         Button {
             showShareSheet = true
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: Spacing.smd) {
                 Image(systemName: "square.and.arrow.up")
-                    .font(.headline)
+                    .font(Typography.headline)
 
                 Text("Invite Friends")
-                    .font(.headline)
-                    .fontWeight(.bold)
+                    .font(Typography.headline)
             }
-            .foregroundColor(.white)
+            .foregroundColor(Theme.background)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .background(
-                LinearGradient(
-                    colors: [.orange, .yellow],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
-            .cornerRadius(16)
-            .shadow(color: .orange.opacity(0.3), radius: 8, x: 0, y: 4)
+            .padding(.vertical, Spacing.md)
+            .background(Theme.accentGradient)
+            .cornerRadius(Radius.md)
+            .shadow(color: Theme.accent.opacity(0.3), radius: 10, x: 0, y: 4)
         }
     }
 
     private var comingSoonSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             Text("Coming Soon")
-                .font(.headline)
+                .font(Typography.headline)
+                .foregroundColor(Theme.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            VStack(spacing: 12) {
+            VStack(spacing: Spacing.smd) {
                 ComingSoonRow(
                     icon: "chart.line.uptrend.xyaxis",
                     title: "Leaderboards",
@@ -134,41 +126,39 @@ struct ComingSoonRow: View {
     let description: String
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: Spacing.md) {
             ZStack {
                 Circle()
-                    .fill(Color.gray.opacity(0.15))
+                    .fill(Theme.textTertiary.opacity(0.15))
                     .frame(width: 44, height: 44)
 
                 Image(systemName: icon)
-                    .font(.headline)
-                    .foregroundColor(.gray)
+                    .font(Typography.headline)
+                    .foregroundColor(Theme.textTertiary)
             }
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(Typography.bodyBold)
+                    .foregroundColor(Theme.textPrimary)
 
                 Text(description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(Typography.caption)
+                    .foregroundColor(Theme.textSecondary)
             }
 
             Spacer()
 
             Text("Soon")
-                .font(.caption)
-                .fontWeight(.medium)
-                .foregroundColor(.secondary)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color(.systemGray5))
-                .cornerRadius(6)
+                .font(Typography.caption)
+                .foregroundColor(Theme.textTertiary)
+                .padding(.horizontal, Spacing.sm)
+                .padding(.vertical, Spacing.xs)
+                .background(Theme.surfaceElevated)
+                .cornerRadius(Radius.sm)
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
+        .padding(Spacing.md)
+        .cardStyle()
     }
 }
 

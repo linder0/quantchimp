@@ -2,7 +2,7 @@
 //  SprintResultView.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Sprint result view using Theme tokens
 //
 
 import SwiftUI
@@ -41,7 +41,7 @@ struct SprintResultView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
+            VStack(spacing: Spacing.lg) {
                 // Result header
                 resultHeader
 
@@ -56,9 +56,10 @@ struct SprintResultView: View {
                 // Action buttons
                 actionButtons
             }
-            .padding()
+            .padding(Spacing.md)
         }
-        .background(Color(.systemGray6))
+        .scrollIndicators(.hidden)
+        .background(Theme.background)
         .navigationTitle("Results")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
@@ -68,12 +69,12 @@ struct SprintResultView: View {
     }
 
     private var resultHeader: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.md) {
             ZStack {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [.blue.opacity(0.3), .purple.opacity(0.2)],
+                            colors: [Theme.sprint.opacity(0.3), Theme.level.opacity(0.2)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -82,75 +83,79 @@ struct SprintResultView: View {
 
                 Image(systemName: "flag.checkered")
                     .font(.system(size: 44))
-                    .foregroundColor(.blue)
+                    .foregroundColor(Theme.sprint)
             }
 
             Text("Sprint Complete!")
-                .font(.title)
-                .fontWeight(.bold)
+                .font(Typography.heading1)
+                .foregroundColor(Theme.textPrimary)
 
             Text(performanceMessage)
-                .font(.title3)
-                .foregroundColor(.secondary)
+                .font(Typography.heading3)
+                .foregroundColor(Theme.textSecondary)
         }
-        .padding(.top, 20)
+        .padding(.top, Spacing.lg)
     }
 
     private var statsGrid: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: Spacing.smd) {
             StatCardLarge(
                 icon: "checkmark.circle.fill",
                 value: "\(correctCount)",
                 label: "Correct",
-                color: .green
+                color: Theme.success
             )
 
             StatCardLarge(
                 icon: "percent",
                 value: String(format: "%.0f%%", accuracy),
                 label: "Accuracy",
-                color: .blue
+                color: Theme.sprint
             )
 
             StatCardLarge(
                 icon: "number",
                 value: "\(totalAttempts)",
                 label: "Attempts",
-                color: .orange
+                color: Theme.accent
             )
         }
     }
 
     private var xpCard: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 8) {
+        VStack(spacing: Spacing.smd) {
+            HStack(spacing: Spacing.sm) {
                 Image(systemName: "star.fill")
                     .font(.title)
-                    .foregroundColor(.yellow)
+                    .foregroundColor(Theme.xp)
 
                 Text("+\(xpEarned) XP")
-                    .font(.title2)
-                    .fontWeight(.bold)
+                    .font(Typography.heading2)
+                    .foregroundColor(Theme.textPrimary)
             }
             .scaleEffect(showXPAnimation ? 1.1 : 1.0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: showXPAnimation)
+            .animation(Motion.bounce, value: showXPAnimation)
 
             Text("Difficulty: \(difficulty.rawValue)")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+                .font(Typography.caption)
+                .foregroundColor(Theme.textSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(20)
+        .padding(Spacing.lg)
         .background(
             LinearGradient(
-                colors: [.yellow.opacity(0.2), .orange.opacity(0.1)],
+                colors: [Theme.xp.opacity(0.2), Theme.accent.opacity(0.1)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
         )
-        .cornerRadius(16)
+        .cornerRadius(Radius.lg)
+        .overlay(
+            RoundedRectangle(cornerRadius: Radius.lg)
+                .stroke(Theme.xp.opacity(0.3), lineWidth: 1)
+        )
         .onAppear {
-            withAnimation(.easeInOut(duration: 0.3).delay(0.3)) {
+            withAnimation(Motion.ease(Motion.normal).delay(0.3)) {
                 showXPAnimation = true
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
@@ -162,12 +167,10 @@ struct SprintResultView: View {
     }
 
     private var actionButtons: some View {
-        VStack(spacing: 12) {
-            PrimaryButton(title: "Try Again", color: .blue) {
-                // Go back to setup (remove last 2 items from path: SprintPlay and SprintResult)
+        VStack(spacing: Spacing.smd) {
+            PrimaryButton(title: "Try Again", color: Theme.sprint) {
                 if navigationPath.count >= 2 {
                     navigationPath.removeLast(2)
-                    // Re-add arithmetic setup
                     navigationPath.append(NavigationDestination.arithmeticSetup)
                 }
             }
@@ -176,7 +179,7 @@ struct SprintResultView: View {
                 navigationPath = NavigationPath()
             }
         }
-        .padding(.bottom, 20)
+        .padding(.bottom, Spacing.lg)
     }
 
     private func updateXPIfNeeded() {

@@ -2,7 +2,7 @@
 //  GoalTile.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Goal selection tile using Theme tokens
 //
 
 import SwiftUI
@@ -14,22 +14,22 @@ struct GoalTile: View {
 
     private var goalColor: Color {
         switch goal.color {
-        case "purple": return .purple
-        case "blue": return .blue
-        case "orange": return .orange
-        case "green": return .green
-        default: return .orange
+        case "purple": return Theme.level
+        case "blue": return Theme.sprint
+        case "orange": return Theme.accent
+        case "green": return Theme.success
+        default: return Theme.accent
         }
     }
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 16) {
+            HStack(spacing: Spacing.md) {
                 // Icon
                 ZStack {
                     Circle()
                         .fill(goalColor.opacity(0.15))
-                        .frame(width: 56, height: 56)
+                        .frame(width: 52, height: 52)
 
                     Image(systemName: goal.icon)
                         .font(.title2)
@@ -37,14 +37,14 @@ struct GoalTile: View {
                 }
 
                 // Text
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(goal.rawValue)
-                        .font(.headline)
-                        .foregroundColor(.primary)
+                        .font(Typography.headline)
+                        .foregroundColor(Theme.textPrimary)
 
                     Text(goal.description)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(Typography.caption)
+                        .foregroundColor(Theme.textSecondary)
                         .lineLimit(2)
                 }
 
@@ -53,7 +53,7 @@ struct GoalTile: View {
                 // Selection indicator
                 ZStack {
                     Circle()
-                        .stroke(isSelected ? goalColor : Color.gray.opacity(0.3), lineWidth: 2)
+                        .stroke(isSelected ? goalColor : Theme.textTertiary, lineWidth: 2)
                         .frame(width: 24, height: 24)
 
                     if isSelected {
@@ -63,26 +63,33 @@ struct GoalTile: View {
                     }
                 }
             }
-            .padding(16)
+            .padding(Spacing.md)
             .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(.systemBackground))
-                    .shadow(color: isSelected ? goalColor.opacity(0.2) : .black.opacity(0.05), radius: 8, x: 0, y: 2)
+                RoundedRectangle(cornerRadius: Radius.lg)
+                    .fill(Theme.surface)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(isSelected ? goalColor : Color.clear, lineWidth: 2)
+                RoundedRectangle(cornerRadius: Radius.lg)
+                    .stroke(isSelected ? goalColor : Theme.surfaceBorder, lineWidth: isSelected ? 2 : 1)
+            )
+            .shadow(
+                color: isSelected ? goalColor.opacity(0.2) : Shadow.sm.color,
+                radius: isSelected ? 8 : Shadow.sm.radius,
+                x: 0,
+                y: isSelected ? 4 : Shadow.sm.y
             )
         }
         .buttonStyle(.plain)
+        .pressable()
+        .animation(Motion.spring, value: isSelected)
     }
 }
 
 #Preview {
-    VStack(spacing: 12) {
+    VStack(spacing: Spacing.smd) {
         GoalTile(goal: .quantCareer, isSelected: true) {}
         GoalTile(goal: .interviewPrep, isSelected: false) {}
     }
-    .padding()
-    .background(Color(.systemGray6))
+    .padding(Spacing.lg)
+    .background(Theme.background)
 }

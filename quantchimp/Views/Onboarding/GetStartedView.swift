@@ -2,7 +2,7 @@
 //  GetStartedView.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Get started onboarding using Theme tokens
 //
 
 import SwiftUI
@@ -17,12 +17,24 @@ struct GetStartedView: View {
     @State private var mascotScale: CGFloat = 0.5
     @State private var showConfetti: Bool = false
     @State private var confettiPieces: [ConfettiPiece] = []
+    @State private var viewSize: CGSize = .zero
 
     var body: some View {
         ZStack {
+            // Capture view size
+            GeometryReader { geometry in
+                Color.clear
+                    .onAppear {
+                        viewSize = geometry.size
+                    }
+                    .onChange(of: geometry.size) { _, newSize in
+                        viewSize = newSize
+                    }
+            }
+
             // Confetti layer
             ForEach(confettiPieces) { piece in
-                ConfettiView(piece: piece)
+                ConfettiView(piece: piece, viewSize: viewSize)
             }
 
             VStack(spacing: 0) {
@@ -35,8 +47,8 @@ struct GetStartedView: View {
                         .fill(
                             RadialGradient(
                                 colors: [
-                                    Color.orange.opacity(0.4),
-                                    Color.orange.opacity(0.1),
+                                    Theme.accent.opacity(0.4),
+                                    Theme.accent.opacity(0.1),
                                     Color.clear
                                 ],
                                 center: .center,
@@ -50,7 +62,7 @@ struct GetStartedView: View {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [.orange.opacity(0.25), .yellow.opacity(0.2)],
+                                colors: [Theme.accent.opacity(0.25), Theme.xp.opacity(0.2)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -58,7 +70,7 @@ struct GetStartedView: View {
                         .frame(width: 160, height: 160)
                         .overlay(
                             Circle()
-                                .stroke(Color.orange.opacity(0.4), lineWidth: 4)
+                                .stroke(Theme.accent.opacity(0.4), lineWidth: 4)
                         )
 
                     Text("🎉")
@@ -70,51 +82,48 @@ struct GetStartedView: View {
                     .frame(height: 40)
 
                 // Title
-                VStack(spacing: 16) {
+                VStack(spacing: Spacing.md) {
                     Text("You're All Set!")
-                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .font(Typography.displaySmall)
+                        .foregroundColor(Theme.textPrimary)
 
                     Text("Your training journey begins now")
-                        .font(.title3)
-                        .foregroundColor(.secondary)
+                        .font(Typography.heading3)
+                        .foregroundColor(Theme.textSecondary)
                 }
 
                 Spacer()
-                    .frame(height: 32)
+                    .frame(height: Spacing.xl)
 
                 // Summary card
                 summaryCard
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, Spacing.lg)
 
                 Spacer()
 
                 // Navigation buttons
-                VStack(spacing: 12) {
+                VStack(spacing: Spacing.smd) {
                     PrimaryButton(title: "Start Training") {
                         onComplete()
                     }
 
-                    Button {
+                    TertiaryButton(title: "Back") {
                         onBack()
-                    } label: {
-                        Text("Back")
-                            .font(.body)
-                            .fontWeight(.medium)
-                            .foregroundColor(.secondary)
                     }
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 20)
+                .padding(.horizontal, Spacing.lg)
+                .padding(.bottom, Spacing.lg)
             }
             .opacity(contentOpacity)
         }
+        .background(Theme.background)
         .onAppear {
             startAnimations()
         }
     }
 
     private var summaryCard: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.md) {
             // Goal
             if let goal = selectedGoal {
                 SummaryRow(
@@ -125,12 +134,13 @@ struct GetStartedView: View {
                 )
 
                 Divider()
+                    .background(Theme.surfaceBorder)
             }
 
             // Daily goal
             SummaryRow(
                 icon: "clock.fill",
-                iconColor: .orange,
+                iconColor: Theme.accent,
                 label: "Daily Goal",
                 value: "\(appState.userProfile.dailyGoalMinutes) minutes"
             )
@@ -138,21 +148,18 @@ struct GetStartedView: View {
             // Reminder
             if let preset = appState.userProfile.reminderPreset, preset != .none {
                 Divider()
+                    .background(Theme.surfaceBorder)
 
                 SummaryRow(
                     icon: "bell.fill",
-                    iconColor: .purple,
+                    iconColor: Theme.level,
                     label: "Reminder",
                     value: reminderDescription
                 )
             }
         }
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 4)
-        )
+        .padding(Spacing.lg)
+        .cardStyle()
     }
 
     private var reminderDescription: String {
@@ -169,22 +176,22 @@ struct GetStartedView: View {
 
     private func goalColor(for goal: UserGoal) -> Color {
         switch goal.color {
-        case "purple": return .purple
-        case "blue": return .blue
-        case "orange": return .orange
-        case "green": return .green
-        default: return .orange
+        case "purple": return Theme.level
+        case "blue": return Theme.sprint
+        case "orange": return Theme.accent
+        case "green": return Theme.success
+        default: return Theme.accent
         }
     }
 
     private func startAnimations() {
         // Content fade in
-        withAnimation(.easeOut(duration: 0.5)) {
+        withAnimation(Motion.ease(Motion.smooth)) {
             contentOpacity = 1.0
         }
 
         // Mascot entrance
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.6).delay(0.2)) {
+        withAnimation(Motion.bounce.delay(0.2)) {
             mascotScale = 1.0
         }
 
@@ -198,11 +205,12 @@ struct GetStartedView: View {
         showConfetti = true
 
         // Create confetti pieces
+        let width = viewSize.width > 0 ? viewSize.width : 400
         for i in 0..<50 {
             let piece = ConfettiPiece(
                 id: i,
-                x: CGFloat.random(in: 0...UIScreen.main.bounds.width),
-                color: [Color.orange, .yellow, .purple, .blue, .green, .pink].randomElement() ?? .orange
+                x: CGFloat.random(in: 0...width),
+                color: [Theme.accent, Theme.xp, Theme.level, Theme.sprint, Theme.success, Theme.streak].randomElement() ?? Theme.accent
             )
             confettiPieces.append(piece)
         }
@@ -218,21 +226,21 @@ struct SummaryRow: View {
     let value: String
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: Spacing.md) {
             Image(systemName: icon)
                 .font(.title3)
                 .foregroundColor(iconColor)
                 .frame(width: 28)
 
             Text(label)
-                .font(.body)
-                .foregroundColor(.secondary)
+                .font(Typography.body)
+                .foregroundColor(Theme.textSecondary)
 
             Spacer()
 
             Text(value)
-                .font(.body)
-                .fontWeight(.medium)
+                .font(Typography.bodyBold)
+                .foregroundColor(Theme.textPrimary)
         }
     }
 }
@@ -247,10 +255,19 @@ struct ConfettiPiece: Identifiable {
 
 struct ConfettiView: View {
     let piece: ConfettiPiece
+    let viewSize: CGSize
 
     @State private var yOffset: CGFloat = -50
     @State private var rotation: Double = 0
     @State private var opacity: Double = 1
+
+    private var viewWidth: CGFloat {
+        viewSize.width > 0 ? viewSize.width : 400
+    }
+
+    private var viewHeight: CGFloat {
+        viewSize.height > 0 ? viewSize.height : 800
+    }
 
     var body: some View {
         Rectangle()
@@ -258,13 +275,13 @@ struct ConfettiView: View {
             .frame(width: CGFloat.random(in: 6...10), height: CGFloat.random(in: 10...16))
             .cornerRadius(2)
             .rotationEffect(.degrees(rotation))
-            .offset(x: piece.x - UIScreen.main.bounds.width / 2, y: yOffset)
+            .offset(x: piece.x - viewWidth / 2, y: yOffset)
             .opacity(opacity)
             .onAppear {
                 withAnimation(
                     .easeOut(duration: Double.random(in: 2.0...3.5))
                 ) {
-                    yOffset = UIScreen.main.bounds.height + 100
+                    yOffset = viewHeight + 100
                     rotation = Double.random(in: 360...720)
                 }
 

@@ -2,7 +2,7 @@
 //  SessionRow.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Session history row using Theme tokens
 //
 
 import SwiftUI
@@ -10,49 +10,42 @@ import SwiftUI
 struct SessionRow: View {
     let session: SessionRecord
 
-    private var dateString: String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: session.date, relativeTo: Date())
-    }
-
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Spacing.smd) {
             Image(systemName: session.mode.icon)
-                .font(.headline)
+                .font(Typography.headline)
                 .foregroundColor(session.mode.color)
                 .frame(width: 32)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text(session.mode.rawValue)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(Typography.bodyBold)
+                    .foregroundColor(Theme.textPrimary)
 
-                Text(dateString)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                Text(session.date.relativeString)
+                    .font(Typography.caption)
+                    .foregroundColor(Theme.textSecondary)
             }
 
             Spacer()
 
-            VStack(alignment: .trailing, spacing: 2) {
+            VStack(alignment: .trailing, spacing: Spacing.xs) {
                 Text("\(session.correctCount)/\(session.questionsAnswered)")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(Typography.bodyBold)
+                    .foregroundColor(Theme.textPrimary)
 
                 Text("+\(session.xpEarned) XP")
-                    .font(.caption)
-                    .foregroundColor(.orange)
+                    .font(Typography.caption)
+                    .foregroundColor(Theme.xp)
             }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
+        .padding(Spacing.md)
+        .cardStyle(cornerRadius: Radius.md)
     }
 }
 
 #Preview {
-    VStack(spacing: 8) {
+    VStack(spacing: Spacing.sm) {
         SessionRow(session: SessionRecord(
             mode: .daily,
             questionsAnswered: 5,
@@ -67,6 +60,6 @@ struct SessionRow: View {
             xpEarned: 180
         ))
     }
-    .padding()
-    .background(Color(.systemGray6))
+    .padding(Spacing.lg)
+    .background(Theme.background)
 }

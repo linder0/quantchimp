@@ -2,7 +2,7 @@
 //  StatsView.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Statistics view using Theme tokens
 //
 
 import SwiftUI
@@ -12,8 +12,8 @@ struct StatsView: View {
     @EnvironmentObject var appState: AppState
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
+        ScrollableViewWithHeader(title: "Stats", headerColor: Theme.surfaceElevated) {
+            VStack(spacing: Spacing.lg) {
                 // Summary section
                 summarySection
 
@@ -25,49 +25,48 @@ struct StatsView: View {
 
                 Spacer(minLength: 40)
             }
-            .padding()
+            .padding(Spacing.md)
         }
-        .background(Color(.systemGray6).ignoresSafeArea())
-        .navigationBarHidden(true)
     }
 
     private var summarySection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             Text("Overview")
-                .font(.headline)
+                .font(Typography.headline)
+                .foregroundColor(Theme.textPrimary)
 
-            HStack(spacing: 12) {
+            HStack(spacing: Spacing.smd) {
                 StatCard(
                     icon: "questionmark.circle.fill",
                     value: "\(statsManager.totalQuestions)",
                     label: "Questions",
-                    color: .blue
+                    color: Theme.sprint
                 )
 
                 StatCard(
                     icon: "checkmark.circle.fill",
                     value: "\(statsManager.totalCorrect)",
                     label: "Correct",
-                    color: .green
+                    color: Theme.success
                 )
 
                 StatCard(
                     icon: "percent",
                     value: String(format: "%.0f%%", statsManager.overallAccuracy),
                     label: "Accuracy",
-                    color: .purple
+                    color: Theme.level
                 )
             }
-
         }
     }
 
     private var modeBreakdownSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             Text("By Mode")
-                .font(.headline)
+                .font(Typography.headline)
+                .foregroundColor(Theme.textPrimary)
 
-            VStack(spacing: 12) {
+            VStack(spacing: Spacing.smd) {
                 ModeStatCard(
                     mode: .daily,
                     completed: statsManager.dailyCompleted,
@@ -84,30 +83,31 @@ struct StatsView: View {
     }
 
     private var sessionHistorySection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             Text("Recent Sessions")
-                .font(.headline)
+                .font(Typography.headline)
+                .foregroundColor(Theme.textPrimary)
 
             if statsManager.recentSessions.isEmpty {
-                VStack(spacing: 12) {
+                VStack(spacing: Spacing.smd) {
                     Image(systemName: "clock.arrow.circlepath")
                         .font(.system(size: 40))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Theme.textSecondary)
 
                     Text("No sessions yet")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(Typography.bodyBold)
+                        .foregroundColor(Theme.textSecondary)
 
                     Text("Complete a puzzle or sprint to see your history here.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(Typography.caption)
+                        .foregroundColor(Theme.textTertiary)
                         .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(32)
+                .padding(Spacing.xl)
                 .cardStyle()
             } else {
-                VStack(spacing: 8) {
+                VStack(spacing: Spacing.sm) {
                     ForEach(statsManager.recentSessions) { session in
                         SessionRow(session: session)
                     }

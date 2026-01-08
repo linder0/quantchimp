@@ -2,7 +2,7 @@
 //  DailyResultView.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Daily result view using Theme tokens
 //
 
 import SwiftUI
@@ -23,7 +23,7 @@ struct DailyResultView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
+            VStack(spacing: Spacing.lg) {
                 // Result header
                 resultHeader
 
@@ -41,15 +41,15 @@ struct DailyResultView: View {
                 Spacer(minLength: 40)
 
                 // Done button
-                PrimaryButton(title: "Done", color: isCorrect ? .green : .orange) {
-                    // Go back to home
+                PrimaryButton(title: "Done", color: isCorrect ? Theme.success : Theme.accent) {
                     navigationPath = NavigationPath()
                 }
-                .padding(.bottom, 20)
+                .padding(.bottom, Spacing.lg)
             }
-            .padding()
+            .padding(Spacing.md)
         }
-        .background(Color(.systemGray6))
+        .scrollIndicators(.hidden)
+        .background(Theme.background)
         .navigationTitle("Result")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
@@ -59,53 +59,51 @@ struct DailyResultView: View {
     }
 
     private var resultHeader: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.md) {
             ZStack {
                 Circle()
-                    .fill(isCorrect ? Color.green.opacity(0.15) : Color.red.opacity(0.15))
+                    .fill(isCorrect ? Theme.success.opacity(0.15) : Theme.error.opacity(0.15))
                     .frame(width: 100, height: 100)
 
                 Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
                     .font(.system(size: 50))
-                    .foregroundColor(isCorrect ? .green : .red)
+                    .foregroundColor(isCorrect ? Theme.success : Theme.error)
             }
 
             Text(isCorrect ? "Correct!" : "Incorrect")
-                .font(.title)
-                .fontWeight(.bold)
-                .foregroundColor(isCorrect ? .green : .red)
+                .font(Typography.heading1)
+                .foregroundColor(isCorrect ? Theme.success : Theme.error)
 
             if isCorrect && appState.streak > 0 {
-                HStack(spacing: 4) {
+                HStack(spacing: Spacing.xs) {
                     Image(systemName: "flame.fill")
-                        .foregroundColor(.orange)
+                        .foregroundColor(Theme.streak)
                     Text("\(appState.streak) day streak!")
-                        .fontWeight(.medium)
-                        .foregroundColor(.orange)
+                        .font(Typography.bodyBold)
+                        .foregroundColor(Theme.streak)
                 }
             }
         }
-        .padding(.top, 20)
+        .padding(.top, Spacing.lg)
     }
 
     private var xpBadge: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Spacing.sm) {
             Image(systemName: "star.fill")
-                .foregroundColor(.yellow)
+                .foregroundColor(Theme.xp)
 
             Text("+\(xpEarned) XP")
-                .font(.headline)
-                .fontWeight(.bold)
-                .foregroundColor(.primary)
+                .font(Typography.headline)
+                .foregroundColor(Theme.textPrimary)
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
-        .background(Color.yellow.opacity(0.2))
-        .cornerRadius(20)
+        .padding(.horizontal, Spacing.lg)
+        .padding(.vertical, Spacing.smd)
+        .background(Theme.xp.opacity(0.2))
+        .cornerRadius(Radius.full)
         .scaleEffect(showXPAnimation ? 1.1 : 1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: showXPAnimation)
+        .animation(Motion.bounce, value: showXPAnimation)
         .onAppear {
-            withAnimation(.easeInOut(duration: 0.3).delay(0.2)) {
+            withAnimation(Motion.ease(Motion.normal).delay(0.2)) {
                 showXPAnimation = true
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -117,42 +115,43 @@ struct DailyResultView: View {
     }
 
     private var explanationCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: Spacing.smd) {
             HStack {
                 Image(systemName: "lightbulb.fill")
-                    .foregroundColor(.yellow)
+                    .foregroundColor(Theme.xp)
                 Text("Explanation")
-                    .font(.headline)
+                    .font(Typography.headline)
+                    .foregroundColor(Theme.textPrimary)
             }
 
             Text(problem.explanation)
-                .font(.body)
-                .foregroundColor(.secondary)
+                .font(Typography.body)
+                .foregroundColor(Theme.textSecondary)
                 .lineSpacing(4)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
+        .padding(Spacing.lg)
         .cardStyle()
     }
 
     private var correctAnswerCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: Spacing.smd) {
             Text("Correct Answer")
-                .font(.headline)
-                .foregroundColor(.green)
+                .font(Typography.headline)
+                .foregroundColor(Theme.success)
 
             Text(problem.choices[problem.correctIndex])
-                .font(.title3)
-                .fontWeight(.medium)
+                .font(Typography.heading3)
+                .foregroundColor(Theme.textPrimary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .background(Color.green.opacity(0.1))
+        .padding(Spacing.lg)
+        .background(Theme.success.opacity(0.1))
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.green.opacity(0.3), lineWidth: 2)
+            RoundedRectangle(cornerRadius: Radius.lg)
+                .stroke(Theme.success.opacity(0.3), lineWidth: 2)
         )
-        .cornerRadius(16)
+        .cornerRadius(Radius.lg)
     }
 
     private func updateStatsIfNeeded() {

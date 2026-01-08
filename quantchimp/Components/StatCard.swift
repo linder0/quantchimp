@@ -2,7 +2,7 @@
 //  StatCard.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Stat display cards using Theme tokens
 //
 
 import SwiftUI
@@ -15,21 +15,21 @@ struct StatCard: View {
     let color: Color
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.sm) {
             Image(systemName: icon)
                 .font(.title3)
                 .foregroundColor(color)
 
             Text(value)
-                .font(.title3)
-                .fontWeight(.bold)
+                .font(Typography.heading3)
+                .foregroundColor(Theme.textPrimary)
 
             Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(Typography.caption)
+                .foregroundColor(Theme.textSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 14)
+        .padding(.vertical, Spacing.smd)
         .cardStyle()
     }
 }
@@ -42,59 +42,112 @@ struct StatCardLarge: View {
     let color: Color
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.sm) {
             Image(systemName: icon)
                 .font(.title2)
                 .foregroundColor(color)
 
             Text(value)
-                .font(.title2)
-                .fontWeight(.bold)
+                .font(Typography.heading2)
+                .foregroundColor(Theme.textPrimary)
 
             Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(Typography.caption)
+                .foregroundColor(Theme.textSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
+        .padding(.vertical, Spacing.md)
         .cardStyle()
     }
 }
 
-#Preview {
-    VStack(spacing: 20) {
-        HStack(spacing: 16) {
+/// Animated stat card that counts up
+struct AnimatedStatCard: View {
+    let icon: String
+    let targetValue: Int
+    let label: String
+    let color: Color
+    var suffix: String = ""
+
+    @State private var displayValue: Int = 0
+
+    var body: some View {
+        VStack(spacing: Spacing.sm) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundColor(color)
+
+            Text("\(displayValue)\(suffix)")
+                .font(Typography.heading2)
+                .foregroundColor(Theme.textPrimary)
+                .contentTransition(.numericText())
+
+            Text(label)
+                .font(Typography.caption)
+                .foregroundColor(Theme.textSecondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, Spacing.md)
+        .cardStyle()
+        .onAppear {
+            withAnimation(.easeOut(duration: Motion.slow)) {
+                displayValue = targetValue
+            }
+        }
+    }
+}
+
+#Preview("Stat Cards") {
+    VStack(spacing: Spacing.lg) {
+        HStack(spacing: Spacing.smd) {
             StatCard(
                 icon: "flame.fill",
                 value: "7",
                 label: "Streak",
-                color: .orange
+                color: Theme.streak
             )
 
             StatCard(
                 icon: "trophy.fill",
                 value: "12",
                 label: "Best",
-                color: .purple
+                color: Theme.level
             )
         }
 
-        HStack(spacing: 16) {
+        HStack(spacing: Spacing.smd) {
             StatCardLarge(
                 icon: "checkmark.circle.fill",
                 value: "15",
                 label: "Correct",
-                color: .green
+                color: Theme.success
             )
 
             StatCardLarge(
                 icon: "percent",
                 value: "85%",
                 label: "Accuracy",
-                color: .blue
+                color: Theme.sprint
+            )
+        }
+
+        HStack(spacing: Spacing.smd) {
+            AnimatedStatCard(
+                icon: "star.fill",
+                targetValue: 150,
+                label: "XP Earned",
+                color: Theme.xp
+            )
+
+            AnimatedStatCard(
+                icon: "percent",
+                targetValue: 92,
+                label: "Accuracy",
+                color: Theme.success,
+                suffix: "%"
             )
         }
     }
-    .padding()
-    .background(Color(.systemGray6))
+    .padding(Spacing.lg)
+    .background(Theme.background)
 }

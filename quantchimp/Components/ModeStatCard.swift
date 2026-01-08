@@ -2,7 +2,7 @@
 //  ModeStatCard.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Mode statistics card using Theme tokens
 //
 
 import SwiftUI
@@ -13,7 +13,7 @@ struct ModeStatCard: View {
     let accuracy: Double
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: Spacing.md) {
             ZStack {
                 Circle()
                     .fill(mode.color.opacity(0.15))
@@ -24,38 +24,38 @@ struct ModeStatCard: View {
                     .foregroundColor(mode.color)
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text(mode.rawValue)
-                    .font(.headline)
+                    .font(Typography.headline)
+                    .foregroundColor(Theme.textPrimary)
 
                 Text("\(completed) completed")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(Typography.caption)
+                    .foregroundColor(Theme.textSecondary)
             }
 
             Spacer()
 
-            VStack(alignment: .trailing, spacing: 4) {
+            VStack(alignment: .trailing, spacing: Spacing.xs) {
                 Text(String(format: "%.0f%%", accuracy))
-                    .font(.title3)
-                    .fontWeight(.bold)
+                    .font(Typography.heading3)
                     .foregroundColor(mode.color)
 
                 Text("accuracy")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(Typography.caption)
+                    .foregroundColor(Theme.textSecondary)
             }
         }
-        .padding()
+        .padding(Spacing.md)
         .cardStyle()
     }
 }
 
 #Preview {
-    VStack(spacing: 12) {
+    VStack(spacing: Spacing.smd) {
         ModeStatCard(mode: .daily, completed: 15, accuracy: 85)
         ModeStatCard(mode: .sprint, completed: 23, accuracy: 72)
     }
-    .padding()
-    .background(Color(.systemGray6))
+    .padding(Spacing.lg)
+    .background(Theme.background)
 }

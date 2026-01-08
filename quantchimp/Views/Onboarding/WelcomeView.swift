@@ -2,7 +2,7 @@
 //  WelcomeView.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Welcome onboarding view using Theme tokens
 //
 
 import SwiftUI
@@ -28,8 +28,8 @@ struct WelcomeView: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                Color.orange.opacity(0.3),
-                                Color.orange.opacity(0.1),
+                                Theme.accent.opacity(0.3),
+                                Theme.accent.opacity(0.1),
                                 Color.clear
                             ],
                             center: .center,
@@ -43,7 +43,7 @@ struct WelcomeView: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [.orange.opacity(0.2), .yellow.opacity(0.15)],
+                            colors: [Theme.accent.opacity(0.2), Theme.xp.opacity(0.15)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -51,7 +51,7 @@ struct WelcomeView: View {
                     .frame(width: 160, height: 160)
                     .overlay(
                         Circle()
-                            .stroke(Color.orange.opacity(0.3), lineWidth: 3)
+                            .stroke(Theme.accent.opacity(0.3), lineWidth: 3)
                     )
 
                 Text("🐵")
@@ -65,40 +65,34 @@ struct WelcomeView: View {
                 .frame(height: 40)
 
             // Title
-            VStack(spacing: 16) {
+            VStack(spacing: Spacing.md) {
                 Text("Welcome to")
-                    .font(.title2)
-                    .foregroundColor(.secondary)
+                    .font(Typography.heading2)
+                    .foregroundColor(Theme.textSecondary)
 
                 Text("QuantChimp")
-                    .font(.system(size: 42, weight: .bold, design: .rounded))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [.orange, .orange.opacity(0.8)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
+                    .font(Typography.displayMedium)
+                    .foregroundStyle(Theme.accentGradient)
             }
             .opacity(titleOpacity)
 
             Spacer()
-                .frame(height: 24)
+                .frame(height: Spacing.lg)
 
             // Subtitle
-            VStack(spacing: 12) {
+            VStack(spacing: Spacing.smd) {
                 Text("Train your brain like a quant")
-                    .font(.title3)
-                    .fontWeight(.medium)
+                    .font(Typography.heading3)
+                    .foregroundColor(Theme.textPrimary)
 
                 Text("Master mental math, sharpen your mind,\nand track your progress every day.")
-                    .font(.body)
-                    .foregroundColor(.secondary)
+                    .font(Typography.body)
+                    .foregroundColor(Theme.textSecondary)
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
             }
             .opacity(subtitleOpacity)
-            .padding(.horizontal, 32)
+            .padding(.horizontal, Spacing.xl)
 
             Spacer()
 
@@ -107,9 +101,10 @@ struct WelcomeView: View {
                 onContinue()
             }
             .opacity(buttonOpacity)
-            .padding(.horizontal, 24)
-            .padding(.bottom, 20)
+            .padding(.horizontal, Spacing.lg)
+            .padding(.bottom, Spacing.lg)
         }
+        .background(Theme.background)
         .onAppear {
             startAnimations()
         }
@@ -117,23 +112,23 @@ struct WelcomeView: View {
 
     private func startAnimations() {
         // Mascot entrance
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.2)) {
+        withAnimation(Motion.bounce.delay(0.2)) {
             mascotScale = 1.0
             mascotOpacity = 1.0
         }
 
         // Title fade in
-        withAnimation(.easeOut(duration: 0.5).delay(0.5)) {
+        withAnimation(Motion.ease(Motion.smooth).delay(0.5)) {
             titleOpacity = 1.0
         }
 
         // Subtitle fade in
-        withAnimation(.easeOut(duration: 0.5).delay(0.7)) {
+        withAnimation(Motion.ease(Motion.smooth).delay(0.7)) {
             subtitleOpacity = 1.0
         }
 
         // Button fade in
-        withAnimation(.easeOut(duration: 0.5).delay(0.9)) {
+        withAnimation(Motion.ease(Motion.smooth).delay(0.9)) {
             buttonOpacity = 1.0
         }
 

@@ -2,7 +2,7 @@
 //  GameHistoryCard.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Game session history card using Theme tokens
 //
 
 import SwiftUI
@@ -10,29 +10,23 @@ import SwiftUI
 struct GameHistoryCard: View {
     let session: SessionRecord
 
-    private var relativeTime: String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: session.date, relativeTo: Date())
-    }
-
     private var accuracyColor: Color {
         if session.accuracy >= 90 {
-            return .green
+            return Theme.success
         } else if session.accuracy >= 70 {
-            return .orange
+            return Theme.warning
         } else {
-            return .red
+            return Theme.error
         }
     }
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: Spacing.md) {
             // Mode icon
             ZStack {
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: Radius.md)
                     .fill(session.mode.color.opacity(0.15))
-                    .frame(width: 56, height: 56)
+                    .frame(width: 52, height: 52)
 
                 Image(systemName: session.mode.icon)
                     .font(.title2)
@@ -40,40 +34,39 @@ struct GameHistoryCard: View {
             }
 
             // Session details
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
                 HStack {
                     Text(session.mode.rawValue)
-                        .font(.headline)
-                        .foregroundColor(.primary)
+                        .font(Typography.headline)
+                        .foregroundColor(Theme.textPrimary)
 
                     Spacer()
 
-                    Text(relativeTime)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    Text(session.date.relativeString)
+                        .font(Typography.caption)
+                        .foregroundColor(Theme.textTertiary)
                 }
 
-                HStack(spacing: 12) {
+                HStack(spacing: Spacing.smd) {
                     // Score
                     Label("\(session.correctCount)/\(session.questionsAnswered)", systemImage: "checkmark.circle.fill")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(Typography.caption)
+                        .foregroundColor(Theme.textSecondary)
 
                     // Accuracy
                     Text(String(format: "%.0f%%", session.accuracy))
-                        .font(.subheadline.weight(.semibold))
+                        .font(Typography.label)
                         .foregroundColor(accuracyColor)
                 }
-
             }
         }
-        .padding()
+        .padding(Spacing.md)
         .cardStyle()
     }
 }
 
-#Preview {
-    VStack(spacing: 12) {
+#Preview("Game History") {
+    VStack(spacing: Spacing.smd) {
         GameHistoryCard(session: SessionRecord(
             mode: .sprint,
             questionsAnswered: 20,
@@ -88,6 +81,6 @@ struct GameHistoryCard: View {
             xpEarned: 50
         ))
     }
-    .padding()
-    .background(Color(.systemGray6))
+    .padding(Spacing.lg)
+    .background(Theme.background)
 }

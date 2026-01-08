@@ -2,7 +2,7 @@
 //  OnboardingContainerView.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Onboarding container using Theme tokens
 //
 
 import SwiftUI
@@ -30,17 +30,9 @@ struct OnboardingContainerView: View {
 
     var body: some View {
         ZStack {
-            // Background gradient
-            LinearGradient(
-                colors: [
-                    Color.orange.opacity(0.1),
-                    Color.yellow.opacity(0.05),
-                    Color(.systemBackground)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            // Background
+            Theme.background
+                .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // Content area
@@ -69,31 +61,31 @@ struct OnboardingContainerView: View {
                     .tag(OnboardingStep.getStarted)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
-                .animation(.spring(response: 0.4, dampingFraction: 0.8), value: currentStep)
+                .animation(Motion.spring, value: currentStep)
 
                 // Progress dots
                 progressDots
-                    .padding(.bottom, 20)
+                    .padding(.bottom, Spacing.lg)
             }
         }
     }
 
     private var progressDots: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Spacing.sm) {
             ForEach(OnboardingStep.allCases, id: \.rawValue) { step in
                 Circle()
-                    .fill(step == currentStep ? Color.orange : Color.gray.opacity(0.3))
+                    .fill(step == currentStep ? Theme.accent : Theme.textTertiary)
                     .frame(width: step == currentStep ? 10 : 8, height: step == currentStep ? 10 : 8)
-                    .animation(.spring(response: 0.3), value: currentStep)
+                    .animation(Motion.spring, value: currentStep)
             }
         }
-        .padding(.vertical, 16)
+        .padding(.vertical, Spacing.md)
     }
 
     private func goToNextStep() {
         let nextIndex = currentStep.rawValue + 1
         if let next = OnboardingStep(rawValue: nextIndex) {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            withAnimation(Motion.spring) {
                 currentStep = next
             }
         }
@@ -102,7 +94,7 @@ struct OnboardingContainerView: View {
     private func goToPreviousStep() {
         let prevIndex = currentStep.rawValue - 1
         if let prev = OnboardingStep(rawValue: prevIndex) {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            withAnimation(Motion.spring) {
                 currentStep = prev
             }
         }

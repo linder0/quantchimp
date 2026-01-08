@@ -2,7 +2,7 @@
 //  Difficulty.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Difficulty levels using Theme colors
 //
 
 import SwiftUI
@@ -22,9 +22,9 @@ enum Difficulty: String, CaseIterable {
 
     var color: Color {
         switch self {
-        case .easy: return .green
-        case .medium: return .orange
-        case .hard: return .red
+        case .easy: return Theme.success
+        case .medium: return Theme.warning
+        case .hard: return Theme.error
         }
     }
 

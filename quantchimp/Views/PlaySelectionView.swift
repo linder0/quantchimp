@@ -2,7 +2,7 @@
 //  PlaySelectionView.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Play mode selection using Theme tokens
 //
 
 import SwiftUI
@@ -17,12 +17,12 @@ struct PlaySelectionView: View {
     var body: some View {
         ZStack {
             // Dark background
-            Color(red: 0.12, green: 0.12, blue: 0.14)
+            Theme.background
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // Header
-                VStack(spacing: 16) {
+                VStack(spacing: Spacing.md) {
                     // Close button
                     HStack {
                         Button {
@@ -30,27 +30,27 @@ struct PlaySelectionView: View {
                         } label: {
                             Image(systemName: "xmark")
                                 .font(.title3.weight(.semibold))
-                                .foregroundColor(.white.opacity(0.7))
+                                .foregroundColor(Theme.textSecondary)
                                 .frame(width: 40, height: 40)
-                                .background(Color.white.opacity(0.1))
+                                .background(Theme.surfaceElevated)
                                 .clipShape(Circle())
                         }
 
                         Spacer()
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, Spacing.md)
 
                     // Title
                     Text("Play")
-                        .font(.system(size: 32, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
+                        .font(Typography.displaySmall)
+                        .foregroundColor(Theme.textPrimary)
 
                     // Mascot
                     ZStack {
                         Circle()
                             .fill(
                                 LinearGradient(
-                                    colors: [.orange.opacity(0.3), .yellow.opacity(0.2)],
+                                    colors: [Theme.accent.opacity(0.3), Theme.xp.opacity(0.2)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
@@ -61,22 +61,13 @@ struct PlaySelectionView: View {
                             .font(.system(size: 50))
                     }
                 }
-                .padding(.top, 20)
-                .padding(.bottom, 32)
+                .padding(.top, Spacing.lg)
+                .padding(.bottom, Spacing.xl)
                 .frame(maxWidth: .infinity)
-                .background(
-                    LinearGradient(
-                        colors: [
-                            Color(red: 0.18, green: 0.18, blue: 0.22),
-                            Color(red: 0.12, green: 0.12, blue: 0.14)
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
+                .background(Theme.surfaceGradient)
 
                 // Game mode options
-                VStack(spacing: 12) {
+                VStack(spacing: Spacing.smd) {
                     // Daily Puzzle
                     PlayOptionTile(
                         icon: "brain.head.profile",
@@ -84,7 +75,7 @@ struct PlaySelectionView: View {
                         title: "Daily Puzzle",
                         subtitle: appState.completedDailyToday ? "Completed today" : "Ready to play",
                         isCompleted: appState.completedDailyToday,
-                        color: .purple
+                        color: Theme.daily
                     ) {
                         dismiss()
                         onSelectDaily()
@@ -97,7 +88,7 @@ struct PlaySelectionView: View {
                         title: "Arithmetic Sprint",
                         subtitle: "60 second challenge",
                         isCompleted: false,
-                        color: .blue
+                        color: Theme.sprint
                     ) {
                         dismiss()
                         onSelectSprint()
@@ -110,7 +101,7 @@ struct PlaySelectionView: View {
                         title: "Tournaments",
                         subtitle: "Coming soon",
                         isCompleted: false,
-                        color: .yellow,
+                        color: Theme.xp,
                         isDisabled: true
                     ) {}
 
@@ -120,12 +111,12 @@ struct PlaySelectionView: View {
                         title: "Challenge a Friend",
                         subtitle: "Coming soon",
                         isCompleted: false,
-                        color: .green,
+                        color: Theme.success,
                         isDisabled: true
                     ) {}
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 24)
+                .padding(.horizontal, Spacing.lg)
+                .padding(.top, Spacing.lg)
 
                 Spacer()
             }

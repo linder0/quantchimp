@@ -2,7 +2,7 @@
 //  XPBar.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  XP progress bar using Theme tokens
 //
 
 import SwiftUI
@@ -11,52 +11,104 @@ struct XPBar: View {
     let progress: Double
     let level: Int
     let xpToNext: Int
+    var showLabels: Bool = true
+
+    @State private var animatedProgress: Double = 0
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("Level \(level)")
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.orange)
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            if showLabels {
+                HStack {
+                    Text("Level \(level)")
+                        .font(Typography.label)
+                        .foregroundColor(Theme.accent)
 
-                Spacer()
+                    Spacer()
 
-                Text("\(xpToNext) XP to next level")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    Text("\(xpToNext) XP to next level")
+                        .font(Typography.caption)
+                        .foregroundColor(Theme.textSecondary)
+                }
             }
 
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color(.systemGray5))
-                        .frame(height: 12)
+                    // Background track
+                    RoundedRectangle(cornerRadius: Radius.full)
+                        .fill(Theme.surfaceElevated)
+                        .frame(height: 10)
 
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(
-                            LinearGradient(
-                                colors: [.orange, .yellow],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .frame(width: max(0, geometry.size.width * progress), height: 12)
-                        .animation(.spring(response: 0.5), value: progress)
+                    // Progress fill with gradient
+                    RoundedRectangle(cornerRadius: Radius.full)
+                        .fill(Theme.accentGradient)
+                        .frame(width: max(0, geometry.size.width * animatedProgress), height: 10)
+                        .shadow(color: Theme.accent.opacity(0.4), radius: 4, x: 0, y: 0)
                 }
             }
-            .frame(height: 12)
+            .frame(height: 10)
         }
-        .padding()
+        .padding(Spacing.md)
         .cardStyle()
+        .onAppear {
+            withAnimation(.easeOut(duration: Motion.smooth)) {
+                animatedProgress = progress
+            }
+        }
+        .onChange(of: progress) { _, newValue in
+            withAnimation(.easeOut(duration: Motion.normal)) {
+                animatedProgress = newValue
+            }
+        }
     }
 }
 
-#Preview {
-    VStack(spacing: 20) {
+/// Compact inline XP bar for headers
+struct XPBarCompact: View {
+    let progress: Double
+
+    @State private var animatedProgress: Double = 0
+
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(Theme.surfaceElevated)
+                    .frame(height: 6)
+
+                Capsule()
+                    .fill(Theme.accentGradient)
+                    .frame(width: max(0, geometry.size.width * animatedProgress), height: 6)
+            }
+        }
+        .frame(height: 6)
+        .onAppear {
+            withAnimation(.easeOut(duration: Motion.smooth)) {
+                animatedProgress = progress
+            }
+        }
+        .onChange(of: progress) { _, newValue in
+            withAnimation(.easeOut(duration: Motion.normal)) {
+                animatedProgress = newValue
+            }
+        }
+    }
+}
+
+#Preview("XP Bars") {
+    VStack(spacing: Spacing.lg) {
         XPBar(progress: 0.3, level: 2, xpToNext: 140)
         XPBar(progress: 0.75, level: 5, xpToNext: 50)
+
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("Compact variant")
+                .font(Typography.caption)
+                .foregroundColor(Theme.textSecondary)
+
+            XPBarCompact(progress: 0.6)
+        }
+        .padding(Spacing.md)
+        .cardStyle()
     }
-    .padding()
-    .background(Color(.systemGray6))
+    .padding(Spacing.lg)
+    .background(Theme.background)
 }

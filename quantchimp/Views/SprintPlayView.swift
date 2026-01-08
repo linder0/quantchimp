@@ -2,7 +2,7 @@
 //  SprintPlayView.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Sprint game play view using Theme tokens
 //
 
 import SwiftUI
@@ -36,14 +36,14 @@ struct SprintPlayView: View {
     }
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: Spacing.lg) {
             // Timer and score
             HStack {
                 timerView
                 Spacer()
                 scoreView
             }
-            .padding(.horizontal)
+            .padding(.horizontal, Spacing.md)
 
             Spacer()
 
@@ -60,8 +60,8 @@ struct SprintPlayView: View {
             // Answer input
             inputView
         }
-        .padding()
-        .background(Color(.systemGray6))
+        .padding(Spacing.md)
+        .background(Theme.background)
         .navigationTitle("Sprint")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
@@ -70,19 +70,17 @@ struct SprintPlayView: View {
                 Button {
                     showExitConfirmation = true
                 } label: {
-                    HStack(spacing: 4) {
+                    HStack(spacing: Spacing.xs) {
                         Image(systemName: "xmark.circle.fill")
                         Text("Exit")
                     }
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(Typography.caption)
+                    .foregroundColor(Theme.textSecondary)
                 }
             }
         }
         .alert("Exit Sprint?", isPresented: $showExitConfirmation) {
-            Button("Cancel", role: .cancel) {
-                // Resume - do nothing
-            }
+            Button("Cancel", role: .cancel) {}
             Button("Exit", role: .destructive) {
                 timerCancellable?.cancel()
                 navigationPath = NavigationPath()
@@ -108,51 +106,50 @@ struct SprintPlayView: View {
     }
 
     private var timerView: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Spacing.sm) {
             Image(systemName: "timer")
-                .foregroundColor(timeRemaining <= 10 ? .red : .blue)
+                .foregroundColor(timeRemaining <= 10 ? Theme.error : Theme.sprint)
 
             Text("\(timeRemaining)s")
-                .font(.title2)
-                .fontWeight(.bold)
-                .foregroundColor(timeRemaining <= 10 ? .red : .primary)
+                .font(Typography.heading3)
+                .foregroundColor(timeRemaining <= 10 ? Theme.error : Theme.textPrimary)
                 .monospacedDigit()
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(timeRemaining <= 10 ? Color.red.opacity(0.1) : Color.blue.opacity(0.1))
-        .cornerRadius(12)
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, Spacing.sm)
+        .background(timeRemaining <= 10 ? Theme.error.opacity(0.15) : Theme.sprint.opacity(0.15))
+        .cornerRadius(Radius.md)
     }
 
     private var scoreView: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Spacing.sm) {
             Image(systemName: "checkmark.circle.fill")
-                .foregroundColor(.green)
+                .foregroundColor(Theme.success)
 
             Text("\(correctCount)")
-                .font(.title2)
-                .fontWeight(.bold)
+                .font(Typography.heading3)
+                .foregroundColor(Theme.textPrimary)
                 .monospacedDigit()
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(Color.green.opacity(0.1))
-        .cornerRadius(12)
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, Spacing.sm)
+        .background(Theme.success.opacity(0.15))
+        .cornerRadius(Radius.md)
     }
 
     private var questionView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.md) {
             Text(currentQuestion.displayText)
-                .font(.system(size: 48, weight: .bold, design: .rounded))
-                .foregroundColor(.primary)
+                .font(Typography.displayMedium)
+                .foregroundColor(Theme.textPrimary)
 
             Text("= ?")
-                .font(.title)
-                .foregroundColor(.secondary)
+                .font(Typography.heading2)
+                .foregroundColor(Theme.textSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(40)
-        .cardStyle(cornerRadius: 24, shadowRadius: 10)
+        .padding(Spacing.xl)
+        .cardElevated(cornerRadius: Radius.xl)
     }
 
     private func feedbackView(_ feedback: FeedbackType) -> some View {
@@ -160,35 +157,35 @@ struct SprintPlayView: View {
             Image(systemName: feedback == .correct ? "checkmark.circle.fill" : "xmark.circle.fill")
             Text(feedback == .correct ? "Correct!" : "Try again!")
         }
-        .font(.headline)
-        .foregroundColor(feedback == .correct ? .green : .red)
-        .padding()
-        .background(feedback == .correct ? Color.green.opacity(0.1) : Color.red.opacity(0.1))
-        .cornerRadius(12)
+        .font(Typography.headline)
+        .foregroundColor(feedback == .correct ? Theme.success : Theme.error)
+        .padding(Spacing.md)
+        .background(feedback == .correct ? Theme.success.opacity(0.15) : Theme.error.opacity(0.15))
+        .cornerRadius(Radius.md)
         .transition(.scale.combined(with: .opacity))
     }
 
     private var inputView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.md) {
             TextField("Your answer", text: $userAnswer)
-                .font(.title)
-                .fontWeight(.bold)
+                .font(Typography.heading2)
                 .multilineTextAlignment(.center)
                 .keyboardType(.numberPad)
                 .focused($isInputFocused)
-                .padding()
-                .background(Color(.systemBackground))
-                .cornerRadius(16)
+                .padding(Spacing.md)
+                .background(Theme.surface)
+                .cornerRadius(Radius.lg)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.blue.opacity(0.3), lineWidth: 2)
+                    RoundedRectangle(cornerRadius: Radius.lg)
+                        .stroke(Theme.sprint.opacity(0.3), lineWidth: 2)
                 )
+                .foregroundColor(Theme.textPrimary)
 
-            PrimaryButton(title: "Submit", color: .blue) {
+            PrimaryButton(title: "Submit", color: Theme.sprint) {
                 submitAnswer()
             }
         }
-        .padding(.bottom, 20)
+        .padding(.bottom, Spacing.lg)
     }
 
     private func startTimer() {
@@ -213,17 +210,15 @@ struct SprintPlayView: View {
 
         let isCorrect = answer == currentQuestion.correctAnswer
 
-        withAnimation(.spring(response: 0.3)) {
+        withAnimation(Motion.spring) {
             showFeedback = isCorrect ? .correct : .incorrect
         }
 
         if isCorrect {
             correctCount += 1
-            let feedback = UINotificationFeedbackGenerator()
-            feedback.notificationOccurred(.success)
+            Haptic.success()
         } else {
-            let feedback = UINotificationFeedbackGenerator()
-            feedback.notificationOccurred(.warning)
+            Haptic.warning()
         }
 
         // Clear and generate next question

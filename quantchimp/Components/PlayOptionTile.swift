@@ -2,7 +2,7 @@
 //  PlayOptionTile.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Game mode selection tile using Theme tokens
 //
 
 import SwiftUI
@@ -18,22 +18,30 @@ struct PlayOptionTile: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 16) {
-                // Emoji icon
-                Text(emoji)
-                    .font(.system(size: 32))
-                    .frame(width: 50, height: 50)
+        Button(action: {
+            Haptic.light()
+            action()
+        }) {
+            HStack(spacing: Spacing.md) {
+                // Emoji icon with subtle background
+                ZStack {
+                    Circle()
+                        .fill(color.opacity(0.15))
+                        .frame(width: 50, height: 50)
+
+                    Text(emoji)
+                        .font(.system(size: 26))
+                }
 
                 // Text content
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(title)
-                        .font(.headline)
-                        .foregroundColor(isDisabled ? .white.opacity(0.4) : .white)
+                        .font(Typography.headline)
+                        .foregroundColor(isDisabled ? Theme.textTertiary : Theme.textPrimary)
 
                     Text(subtitle)
-                        .font(.subheadline)
-                        .foregroundColor(isDisabled ? .white.opacity(0.3) : .white.opacity(0.6))
+                        .font(Typography.caption)
+                        .foregroundColor(isDisabled ? Theme.textTertiary : Theme.textSecondary)
                 }
 
                 Spacer()
@@ -42,59 +50,63 @@ struct PlayOptionTile: View {
                 if isCompleted {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.title2)
-                        .foregroundColor(.green)
+                        .foregroundColor(Theme.success)
                 } else if !isDisabled {
                     Image(systemName: "chevron.right")
                         .font(.subheadline.weight(.semibold))
-                        .foregroundColor(.white.opacity(0.4))
+                        .foregroundColor(Theme.textTertiary)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 16)
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, Spacing.md)
             .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(red: 0.2, green: 0.2, blue: 0.24))
+                RoundedRectangle(cornerRadius: Radius.lg)
+                    .fill(Theme.surface)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: Radius.lg)
+                    .stroke(
+                        isCompleted ? Theme.success.opacity(0.3) : Theme.surfaceBorder,
+                        lineWidth: 1
+                    )
             )
         }
         .disabled(isDisabled)
         .opacity(isDisabled ? 0.6 : 1)
+        .pressable()
     }
 }
 
 #Preview {
-    ZStack {
-        Color(red: 0.12, green: 0.12, blue: 0.14)
-            .ignoresSafeArea()
+    VStack(spacing: Spacing.smd) {
+        PlayOptionTile(
+            icon: "brain.head.profile",
+            emoji: "🧠",
+            title: "Daily Puzzle",
+            subtitle: "Ready to play",
+            isCompleted: false,
+            color: Theme.daily
+        ) {}
 
-        VStack(spacing: 12) {
-            PlayOptionTile(
-                icon: "brain.head.profile",
-                emoji: "🧠",
-                title: "Daily Puzzle",
-                subtitle: "Ready to play",
-                isCompleted: false,
-                color: .purple
-            ) {}
+        PlayOptionTile(
+            icon: "timer",
+            emoji: "⚡",
+            title: "Arithmetic Sprint",
+            subtitle: "Completed",
+            isCompleted: true,
+            color: Theme.sprint
+        ) {}
 
-            PlayOptionTile(
-                icon: "timer",
-                emoji: "⚡",
-                title: "Arithmetic Sprint",
-                subtitle: "Completed",
-                isCompleted: true,
-                color: .blue
-            ) {}
-
-            PlayOptionTile(
-                icon: "trophy.fill",
-                emoji: "🏆",
-                title: "Tournaments",
-                subtitle: "Coming soon",
-                isCompleted: false,
-                color: .yellow,
-                isDisabled: true
-            ) {}
-        }
-        .padding()
+        PlayOptionTile(
+            icon: "trophy.fill",
+            emoji: "🏆",
+            title: "Tournaments",
+            subtitle: "Coming soon",
+            isCompleted: false,
+            color: Theme.xp,
+            isDisabled: true
+        ) {}
     }
+    .padding(Spacing.lg)
+    .background(Theme.background)
 }

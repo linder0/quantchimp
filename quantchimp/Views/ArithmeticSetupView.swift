@@ -2,7 +2,7 @@
 //  ArithmeticSetupView.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Arithmetic sprint setup using Theme tokens
 //
 
 import SwiftUI
@@ -15,36 +15,37 @@ struct ArithmeticSetupView: View {
     @State private var showSprint = false
 
     var body: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: Spacing.xl) {
             Spacer()
 
             // Header
-            VStack(spacing: 12) {
+            VStack(spacing: Spacing.smd) {
                 ZStack {
                     Circle()
-                        .fill(Color.blue.opacity(0.15))
+                        .fill(Theme.sprint.opacity(0.15))
                         .frame(width: 100, height: 100)
 
                     Image(systemName: "timer")
                         .font(.system(size: 44))
-                        .foregroundColor(.blue)
+                        .foregroundColor(Theme.sprint)
                 }
 
                 Text("Arithmetic Sprint")
-                    .font(.title)
-                    .fontWeight(.bold)
+                    .font(Typography.heading1)
+                    .foregroundColor(Theme.textPrimary)
 
                 Text("Solve as many problems as you can in 60 seconds!")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(Typography.body)
+                    .foregroundColor(Theme.textSecondary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                    .padding(.horizontal, Spacing.md)
             }
 
             // Difficulty picker
-            VStack(spacing: 16) {
+            VStack(spacing: Spacing.md) {
                 Text("Select Difficulty")
-                    .font(.headline)
+                    .font(Typography.headline)
+                    .foregroundColor(Theme.textPrimary)
 
                 Picker("Difficulty", selection: $selectedDifficulty) {
                     ForEach(Difficulty.allCases, id: \.self) { difficulty in
@@ -52,32 +53,41 @@ struct ArithmeticSetupView: View {
                     }
                 }
                 .pickerStyle(.segmented)
-                .padding(.horizontal)
+                .padding(.horizontal, Spacing.md)
 
                 Text(selectedDifficulty.description)
-                    .font(.subheadline)
-                    .foregroundColor(selectedDifficulty.color)
-                    .fontWeight(.medium)
+                    .font(Typography.bodyBold)
+                    .foregroundColor(difficultyColor)
             }
-            .padding()
-            .background(Color(.systemBackground))
-            .cornerRadius(20)
+            .padding(Spacing.lg)
+            .cardStyle(cornerRadius: Radius.xlg)
 
             Spacer()
 
             // Start button
-            PrimaryButton(title: "Start Sprint", color: .blue) {
+            PrimaryButton(title: "Start Sprint", color: Theme.sprint) {
                 showSprint = true
             }
-            .padding(.horizontal)
-            .padding(.bottom, 40)
+            .padding(.horizontal, Spacing.md)
+            .padding(.bottom, Spacing.xl)
         }
-        .padding()
-        .background(Color(.systemGray6))
+        .padding(Spacing.md)
+        .background(Theme.background)
         .navigationTitle("Setup")
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $showSprint) {
             SprintPlayView(difficulty: selectedDifficulty, navigationPath: $navigationPath)
+        }
+    }
+
+    private var difficultyColor: Color {
+        switch selectedDifficulty {
+        case .easy:
+            return Theme.success
+        case .medium:
+            return Theme.warning
+        case .hard:
+            return Theme.error
         }
     }
 }

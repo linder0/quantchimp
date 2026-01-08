@@ -2,7 +2,7 @@
 //  GoalSelectionView.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Goal selection onboarding using Theme tokens
 //
 
 import SwiftUI
@@ -16,64 +16,60 @@ struct GoalSelectionView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
+            VStack(spacing: Spacing.lg) {
                 // Header
-                VStack(spacing: 12) {
+                VStack(spacing: Spacing.smd) {
                     Text("What's your goal?")
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .font(Typography.heading1)
+                        .foregroundColor(Theme.textPrimary)
 
                     Text("We'll personalize your experience based on what you want to achieve.")
-                        .font(.body)
-                        .foregroundColor(.secondary)
+                        .font(Typography.body)
+                        .foregroundColor(Theme.textSecondary)
                         .multilineTextAlignment(.center)
-                        .padding(.horizontal, 16)
+                        .padding(.horizontal, Spacing.md)
                 }
-                .padding(.top, 40)
+                .padding(.top, Spacing.xl)
 
                 // Goal tiles
-                VStack(spacing: 12) {
+                VStack(spacing: Spacing.smd) {
                     ForEach(UserGoal.allCases) { goal in
                         GoalTile(
                             goal: goal,
                             isSelected: selectedGoal == goal,
                             onTap: {
-                                withAnimation(.spring(response: 0.3)) {
+                                withAnimation(Motion.spring) {
                                     selectedGoal = goal
                                 }
                             }
                         )
                     }
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, Spacing.lg)
 
                 Spacer(minLength: 120)
             }
         }
+        .scrollIndicators(.hidden)
+        .background(Theme.background)
         .safeAreaInset(edge: .bottom) {
             // Navigation buttons
-            VStack(spacing: 12) {
-                PrimaryButton(title: selectedGoal != nil ? "Continue" : "Select a Goal") {
+            VStack(spacing: Spacing.smd) {
+                PrimaryButton(title: selectedGoal != nil ? "Continue" : "Select a Goal", isEnabled: selectedGoal != nil) {
                     if selectedGoal != nil {
                         onContinue()
                     }
                 }
-                .disabled(selectedGoal == nil)
-                .opacity(selectedGoal == nil ? 0.6 : 1.0)
 
-                Button {
+                TertiaryButton(title: "Back") {
                     onBack()
-                } label: {
-                    Text("Back")
-                        .font(.body)
-                        .fontWeight(.medium)
-                        .foregroundColor(.secondary)
                 }
             }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 16)
+            .padding(.horizontal, Spacing.lg)
+            .padding(.vertical, Spacing.md)
             .background(
                 LinearGradient(
-                    colors: [Color(.systemBackground).opacity(0), Color(.systemBackground)],
+                    colors: [Theme.background.opacity(0), Theme.background],
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -81,7 +77,7 @@ struct GoalSelectionView: View {
         }
         .opacity(contentOpacity)
         .onAppear {
-            withAnimation(.easeOut(duration: 0.4)) {
+            withAnimation(Motion.ease(Motion.smooth)) {
                 contentOpacity = 1.0
             }
         }

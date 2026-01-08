@@ -2,11 +2,10 @@
 //  SessionRecord.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Session record model using Theme colors
 //
 
 import Foundation
-
 import SwiftUI
 
 enum GameMode: String, Codable, CaseIterable {
@@ -22,8 +21,8 @@ enum GameMode: String, Codable, CaseIterable {
 
     var color: Color {
         switch self {
-        case .daily: return .purple
-        case .sprint: return .blue
+        case .daily: return Theme.daily
+        case .sprint: return Theme.sprint
         }
     }
 }

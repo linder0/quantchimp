@@ -2,7 +2,7 @@
 //  ProfileView.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Profile view using Theme tokens
 //
 
 import SwiftUI
@@ -16,7 +16,7 @@ struct ProfileView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
+            VStack(spacing: Spacing.lg) {
                 // Profile header
                 profileHeader
 
@@ -25,10 +25,11 @@ struct ProfileView: View {
 
                 Spacer(minLength: 40)
             }
-            .padding()
+            .padding(Spacing.md)
+            .padding(.top, 40)
         }
-        .background(Color(.systemGray6).ignoresSafeArea())
-        .navigationBarHidden(true)
+        .scrollIndicators(.hidden)
+        .background(Theme.background)
         .sheet(isPresented: $showAvatarPicker) {
             AvatarPickerSheet(selectedEmoji: $appState.userProfile.avatarEmoji)
         }
@@ -46,7 +47,7 @@ struct ProfileView: View {
     }
 
     private var profileHeader: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.md) {
             // Avatar
             Button {
                 showAvatarPicker = true
@@ -55,7 +56,7 @@ struct ProfileView: View {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [.orange.opacity(0.3), .yellow.opacity(0.2)],
+                                colors: [Theme.accent.opacity(0.3), Theme.xp.opacity(0.2)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -67,12 +68,12 @@ struct ProfileView: View {
 
                     // Edit badge
                     Circle()
-                        .fill(Color.orange)
+                        .fill(Theme.accent)
                         .frame(width: 32, height: 32)
                         .overlay(
                             Image(systemName: "pencil")
                                 .font(.caption)
-                                .foregroundColor(.white)
+                                .foregroundColor(Theme.background)
                         )
                         .offset(x: 40, y: 40)
                 }
@@ -83,34 +84,25 @@ struct ProfileView: View {
                 editedName = appState.userProfile.displayName
                 isEditingName = true
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: Spacing.sm) {
                     Text(appState.userProfile.displayName)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
+                        .font(Typography.heading2)
+                        .foregroundColor(Theme.textPrimary)
 
                     Image(systemName: "pencil.circle.fill")
                         .font(.title3)
-                        .foregroundColor(.orange)
+                        .foregroundColor(Theme.accent)
                 }
             }
-
-            // Level badge
-            HStack(spacing: 8) {
-                Image(systemName: "star.fill")
-                    .foregroundColor(.yellow)
-                Text("Level \(appState.currentLevel)")
-                    .fontWeight(.semibold)
-            }
-            .font(.subheadline)
         }
-        .padding(.vertical, 20)
+        .padding(.vertical, Spacing.lg)
     }
 
     private var settingsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             Text("Settings")
-                .font(.headline)
+                .font(Typography.headline)
+                .foregroundColor(Theme.textPrimary)
 
             VStack(spacing: 0) {
                 SettingsToggleRow(
@@ -120,6 +112,7 @@ struct ProfileView: View {
                 )
 
                 Divider()
+                    .background(Theme.surfaceBorder)
                     .padding(.leading, 52)
 
                 SettingsToggleRow(
@@ -129,6 +122,7 @@ struct ProfileView: View {
                 )
 
                 Divider()
+                    .background(Theme.surfaceBorder)
                     .padding(.leading, 52)
 
                 SettingsRow(
@@ -137,15 +131,14 @@ struct ProfileView: View {
                     subtitle: "Coming soon"
                 )
             }
-            .background(Color(.systemBackground))
-            .cornerRadius(16)
-            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+            .cardStyle()
 
             // About section
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: Spacing.md) {
                 Text("About")
-                    .font(.headline)
-                    .padding(.top, 8)
+                    .font(Typography.headline)
+                    .foregroundColor(Theme.textPrimary)
+                    .padding(.top, Spacing.sm)
 
                 VStack(spacing: 0) {
                     SettingsRow(
@@ -154,9 +147,7 @@ struct ProfileView: View {
                         subtitle: "1.0.0"
                     )
                 }
-                .background(Color(.systemBackground))
-                .cornerRadius(16)
-                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+                .cardStyle()
             }
         }
     }
@@ -168,21 +159,22 @@ struct SettingsToggleRow: View {
     @Binding var isOn: Bool
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: Spacing.md) {
             Image(systemName: icon)
                 .font(.title3)
-                .foregroundColor(.orange)
+                .foregroundColor(Theme.accent)
                 .frame(width: 28)
 
             Text(title)
-                .font(.body)
+                .font(Typography.body)
+                .foregroundColor(Theme.textPrimary)
 
             Spacer()
 
             Toggle("", isOn: $isOn)
-                .tint(.orange)
+                .tint(Theme.accent)
         }
-        .padding()
+        .padding(Spacing.md)
     }
 }
 
@@ -192,22 +184,23 @@ struct SettingsRow: View {
     let subtitle: String
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: Spacing.md) {
             Image(systemName: icon)
                 .font(.title3)
-                .foregroundColor(.orange)
+                .foregroundColor(Theme.accent)
                 .frame(width: 28)
 
             Text(title)
-                .font(.body)
+                .font(Typography.body)
+                .foregroundColor(Theme.textPrimary)
 
             Spacer()
 
             Text(subtitle)
-                .font(.body)
-                .foregroundColor(.secondary)
+                .font(Typography.body)
+                .foregroundColor(Theme.textSecondary)
         }
-        .padding()
+        .padding(Spacing.md)
     }
 }
 
@@ -220,7 +213,7 @@ struct AvatarPickerSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVGrid(columns: columns, spacing: 16) {
+                LazyVGrid(columns: columns, spacing: Spacing.md) {
                     ForEach(UserProfile.avatarOptions, id: \.self) { emoji in
                         Button {
                             selectedEmoji = emoji
@@ -231,22 +224,23 @@ struct AvatarPickerSheet: View {
                                 .frame(width: 60, height: 60)
                                 .background(
                                     selectedEmoji == emoji ?
-                                    Color.orange.opacity(0.2) :
-                                    Color(.systemGray6)
+                                    Theme.accent.opacity(0.2) :
+                                    Theme.surfaceElevated
                                 )
-                                .cornerRadius(12)
+                                .cornerRadius(Radius.md)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
+                                    RoundedRectangle(cornerRadius: Radius.md)
                                         .stroke(
-                                            selectedEmoji == emoji ? Color.orange : Color.clear,
+                                            selectedEmoji == emoji ? Theme.accent : Color.clear,
                                             lineWidth: 2
                                         )
                                 )
                         }
                     }
                 }
-                .padding()
+                .padding(Spacing.md)
             }
+            .background(Theme.background)
             .navigationTitle("Choose Avatar")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -254,6 +248,7 @@ struct AvatarPickerSheet: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .foregroundColor(Theme.accent)
                 }
             }
         }

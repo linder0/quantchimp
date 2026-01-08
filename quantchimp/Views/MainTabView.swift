@@ -2,7 +2,7 @@
 //  MainTabView.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Main tab navigation using Theme tokens
 //
 
 import SwiftUI
@@ -28,31 +28,26 @@ struct MainTabView: View {
     @EnvironmentObject var statsManager: StatsManager
 
     @State private var selectedTab: Tab = .home
+    @State private var homeNavigationPath = NavigationPath()
 
     var body: some View {
         VStack(spacing: 0) {
             // Content area
             ZStack {
-                Color(.systemGray6)
-                    .ignoresSafeArea()
-
-                TabView(selection: $selectedTab) {
-                    NavigationStack {
-                        HomeView()
+                switch selectedTab {
+                case .home:
+                    NavigationStack(path: $homeNavigationPath) {
+                        HomeView(navigationPath: $homeNavigationPath)
                     }
-                    .tag(Tab.home)
-
+                case .stats:
                     StatsView()
-                        .tag(Tab.stats)
-
+                case .friends:
                     FriendsView()
-                        .tag(Tab.friends)
-
+                case .profile:
                     ProfileView()
-                        .tag(Tab.profile)
                 }
-                .tabViewStyle(.page(indexDisplayMode: .never))
             }
+            .ignoresSafeArea(edges: .top)
 
             // Custom tab bar
             CustomTabBar(selectedTab: $selectedTab)
@@ -71,17 +66,26 @@ struct CustomTabBar: View {
                     tab: tab,
                     isSelected: selectedTab == tab
                 ) {
-                    withAnimation(.easeInOut(duration: 0.2)) {
+                    withAnimation(Motion.ease(Motion.quick)) {
                         selectedTab = tab
                     }
                 }
             }
         }
-        .padding(.top, 10)
-        .padding(.bottom, 8)
-        .background(Color(.systemBackground))
+        .padding(.top, Spacing.sm)
+        .padding(.bottom, Spacing.sm)
+        .frame(maxWidth: .infinity)
         .background(
-            Color(.systemBackground)
+            Theme.surface
+                .overlay(
+                    Rectangle()
+                        .fill(Theme.surfaceBorder)
+                        .frame(height: 1),
+                    alignment: .top
+                )
+        )
+        .background(
+            Theme.surface
                 .ignoresSafeArea(edges: .bottom)
         )
     }
@@ -94,14 +98,11 @@ struct TabBarButton: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 4) {
+            VStack(spacing: Spacing.xs) {
                 Image(systemName: tab.icon)
                     .font(.system(size: 22))
-
-                Text(tab.rawValue)
-                    .font(.caption2)
+                    .foregroundColor(isSelected ? Theme.accent : Theme.textTertiary)
             }
-            .foregroundColor(isSelected ? .orange : .gray)
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)

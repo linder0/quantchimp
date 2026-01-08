@@ -2,7 +2,7 @@
 //  DailyPuzzleView.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Daily puzzle view using Theme tokens
 //
 
 import SwiftUI
@@ -25,7 +25,7 @@ struct DailyPuzzleView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
+            VStack(spacing: Spacing.lg) {
                 // Problem card
                 problemCard
 
@@ -34,9 +34,10 @@ struct DailyPuzzleView: View {
 
                 Spacer(minLength: 40)
             }
-            .padding()
+            .padding(Spacing.md)
         }
-        .background(Color(.systemGray6))
+        .scrollIndicators(.hidden)
+        .background(Theme.background)
         .navigationTitle("Daily Puzzle")
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $showResult) {
@@ -49,29 +50,29 @@ struct DailyPuzzleView: View {
     }
 
     private var problemCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             HStack {
                 Image(systemName: "brain.head.profile")
                     .font(.title2)
-                    .foregroundColor(.purple)
+                    .foregroundColor(Theme.daily)
 
                 Text("Today's Challenge")
-                    .font(.headline)
-                    .foregroundColor(.purple)
+                    .font(Typography.headline)
+                    .foregroundColor(Theme.daily)
             }
 
             Text(todaysPuzzle.prompt)
-                .font(.title3)
-                .fontWeight(.medium)
+                .font(Typography.heading3)
+                .foregroundColor(Theme.textPrimary)
                 .lineSpacing(4)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .cardStyle(cornerRadius: 20, shadowRadius: 10)
+        .padding(Spacing.lg)
+        .cardElevated(cornerRadius: Radius.xlg)
     }
 
     private var answerChoices: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Spacing.smd) {
             ForEach(0..<todaysPuzzle.choices.count, id: \.self) { index in
                 AnswerButton(
                     text: todaysPuzzle.choices[index],
@@ -81,11 +82,9 @@ struct DailyPuzzleView: View {
                     correctIndex: todaysPuzzle.correctIndex
                 ) {
                     if !hasSubmitted {
-                        // Haptic feedback
-                        let impact = UIImpactFeedbackGenerator(style: .light)
-                        impact.impactOccurred()
+                        Haptic.light()
 
-                        withAnimation(.spring(response: 0.3)) {
+                        withAnimation(Motion.spring) {
                             selectedAnswer = index
                         }
 
@@ -107,8 +106,11 @@ struct DailyPuzzleView: View {
         }
 
         // Haptic feedback for result
-        let feedback = UINotificationFeedbackGenerator()
-        feedback.notificationOccurred(isCorrect ? .success : .error)
+        if isCorrect {
+            Haptic.success()
+        } else {
+            Haptic.error()
+        }
 
         // Navigate to result after feedback
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {

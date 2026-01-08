@@ -2,7 +2,7 @@
 //  AnswerButton.swift
 //  quantchimp
 //
-//  Created by Linda Xue on 1/8/26.
+//  Answer option button with selection states and feedback
 //
 
 import SwiftUI
@@ -17,75 +17,137 @@ struct AnswerButton: View {
 
     private static let labels = ["A", "B", "C", "D"]
 
+    @State private var showPulse = false
+
+    private var isSelected: Bool {
+        selectedAnswer == index
+    }
+
+    private var isCorrect: Bool {
+        index == correctIndex
+    }
+
+    private var isWrong: Bool {
+        hasSubmitted && isSelected && !isCorrect
+    }
+
     private var backgroundColor: Color {
         guard hasSubmitted else {
-            return selectedAnswer == index ? Color.orange.opacity(0.2) : Color(.systemBackground)
+            return isSelected ? Theme.accent.opacity(0.15) : Theme.surface
         }
 
-        if index == correctIndex {
-            return Color.green.opacity(0.2)
-        } else if selectedAnswer == index {
-            return Color.red.opacity(0.2)
+        if isCorrect {
+            return Theme.success.opacity(0.15)
+        } else if isWrong {
+            return Theme.error.opacity(0.15)
         }
-        return Color(.systemBackground)
+        return Theme.surface
     }
 
     private var borderColor: Color {
         guard hasSubmitted else {
-            return selectedAnswer == index ? .orange : Color(.systemGray4)
+            return isSelected ? Theme.accent : Theme.surfaceBorder
         }
 
-        if index == correctIndex {
-            return .green
-        } else if selectedAnswer == index {
-            return .red
+        if isCorrect {
+            return Theme.success
+        } else if isWrong {
+            return Theme.error
         }
-        return Color(.systemGray4)
+        return Theme.surfaceBorder
+    }
+
+    private var labelColor: Color {
+        guard hasSubmitted else {
+            return isSelected ? Theme.accent : Theme.textSecondary
+        }
+
+        if isCorrect {
+            return Theme.success
+        } else if isWrong {
+            return Theme.error
+        }
+        return Theme.textSecondary
     }
 
     var body: some View {
-        Button(action: action) {
-            HStack {
+        Button(action: {
+            Haptic.light()
+            action()
+        }) {
+            HStack(spacing: Spacing.smd) {
+                // Letter badge
                 Text(Self.labels[index])
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(borderColor)
-                    .frame(width: 32, height: 32)
-                    .background(borderColor.opacity(0.1))
-                    .clipShape(Circle())
+                    .font(Typography.headline)
+                    .foregroundColor(labelColor)
+                    .frame(width: 36, height: 36)
+                    .background(
+                        Circle()
+                            .fill(labelColor.opacity(0.1))
+                    )
+                    .overlay(
+                        Circle()
+                            .stroke(labelColor.opacity(0.3), lineWidth: 1)
+                    )
 
+                // Answer text
                 Text(text)
-                    .font(.body)
-                    .foregroundColor(.primary)
+                    .font(Typography.body)
+                    .foregroundColor(Theme.textPrimary)
                     .multilineTextAlignment(.leading)
 
                 Spacer()
 
+                // Result indicator
                 if hasSubmitted {
-                    if index == correctIndex {
+                    if isCorrect {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
-                    } else if selectedAnswer == index {
+                            .font(.title3)
+                            .foregroundColor(Theme.success)
+                            .transition(.scale.combined(with: .opacity))
+                    } else if isWrong {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.red)
+                            .font(.title3)
+                            .foregroundColor(Theme.error)
+                            .transition(.scale.combined(with: .opacity))
                     }
                 }
             }
-            .padding()
-            .background(backgroundColor)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(borderColor, lineWidth: 2)
+            .padding(Spacing.md)
+            .background(
+                RoundedRectangle(cornerRadius: Radius.md)
+                    .fill(backgroundColor)
             )
-            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: Radius.md)
+                    .stroke(borderColor, lineWidth: hasSubmitted || isSelected ? 2 : 1)
+            )
+            .overlay(
+                // Pulse effect on correct answer
+                RoundedRectangle(cornerRadius: Radius.md)
+                    .stroke(Theme.success, lineWidth: 3)
+                    .opacity(showPulse ? 0 : 1)
+                    .scaleEffect(showPulse ? 1.05 : 1)
+                    .animation(
+                        showPulse ? Animation.easeOut(duration: 0.6) : nil,
+                        value: showPulse
+                    )
+            )
         }
         .buttonStyle(.plain)
         .disabled(hasSubmitted)
+        .pressable()
+        .animation(Motion.spring, value: hasSubmitted)
+        .onChange(of: hasSubmitted) { _, newValue in
+            if newValue && isCorrect {
+                showPulse = true
+            }
+        }
     }
 }
 
 #Preview {
-    VStack(spacing: 12) {
+    VStack(spacing: Spacing.smd) {
         AnswerButton(
             text: "Option A - Not selected",
             index: 0,
@@ -109,6 +171,15 @@ struct AnswerButton: View {
             hasSubmitted: true,
             correctIndex: 2
         ) {}
+
+        AnswerButton(
+            text: "Option D - Wrong (submitted)",
+            index: 0,
+            selectedAnswer: .constant(0),
+            hasSubmitted: true,
+            correctIndex: 2
+        ) {}
     }
-    .padding()
+    .padding(Spacing.lg)
+    .background(Theme.background)
 }
