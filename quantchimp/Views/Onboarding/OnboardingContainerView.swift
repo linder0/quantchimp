@@ -35,6 +35,10 @@ struct OnboardingContainerView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
+                // Progress dots
+                progressDots
+                    .padding(.top, Spacing.lg)
+
                 // Content area
                 TabView(selection: $currentStep) {
                     WelcomeView(onContinue: { goToNextStep() })
@@ -62,10 +66,6 @@ struct OnboardingContainerView: View {
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .animation(Motion.spring, value: currentStep)
-
-                // Progress dots
-                progressDots
-                    .padding(.bottom, Spacing.lg)
             }
         }
     }

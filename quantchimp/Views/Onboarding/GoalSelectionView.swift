@@ -38,6 +38,8 @@ struct GoalSelectionView: View {
                             goal: goal,
                             isSelected: selectedGoal == goal,
                             onTap: {
+                                Haptic.selection()
+                                Sound.select()
                                 withAnimation(Motion.spring) {
                                     selectedGoal = goal
                                 }

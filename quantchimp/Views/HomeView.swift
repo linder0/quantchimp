@@ -12,6 +12,7 @@ struct HomeView: View {
     @EnvironmentObject var statsManager: StatsManager
     @Binding var navigationPath: NavigationPath
     @State private var scrollOffset: CGFloat = 0
+    @State private var showSprintFlow = false
 
     // Header transition thresholds
     private let collapseThreshold: CGFloat = 60
@@ -73,8 +74,12 @@ struct HomeView: View {
             case .dailyPuzzle:
                 DailyPuzzleView(navigationPath: $navigationPath)
             case .arithmeticSetup:
-                ArithmeticSetupView(navigationPath: $navigationPath)
+                // Handled by sheet presentation now
+                EmptyView()
             }
+        }
+        .fullScreenCover(isPresented: $showSprintFlow) {
+            ArithmeticSprintFlowView()
         }
     }
 
@@ -208,11 +213,11 @@ struct HomeView: View {
                     icon: "timer",
                     emoji: "⚡",
                     title: "Arithmetic Sprint",
-                    subtitle: "60 second challenge",
+                    subtitle: "Speed challenge",
                     isCompleted: false,
                     color: Theme.sprint
                 ) {
-                    navigationPath.append(NavigationDestination.arithmeticSetup)
+                    showSprintFlow = true
                 }
 
                 // Future modes (disabled)

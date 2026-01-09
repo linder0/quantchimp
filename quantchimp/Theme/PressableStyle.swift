@@ -61,4 +61,3 @@ extension View {
     .padding(Spacing.lg)
     .background(Theme.background)
 }
-

@@ -19,6 +19,7 @@ struct PrimaryButton: View {
     var body: some View {
         Button(action: {
             Haptic.medium()
+            Sound.tap()
             action()
         }) {
             Text(title)

@@ -16,6 +16,11 @@ struct quantchimpApp: App {
     init() {
         // Configure appearance for dark theme
         configureAppearance()
+
+        // Load InjectionIII for hot-reload (Debug only)
+        #if DEBUG
+        Bundle(path: "/Applications/InjectionIII.app/Contents/Resources/iOSInjection.bundle")?.load()
+        #endif
     }
 
     var body: some Scene {

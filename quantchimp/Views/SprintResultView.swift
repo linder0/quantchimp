@@ -2,7 +2,7 @@
 //  SprintResultView.swift
 //  quantchimp
 //
-//  Sprint result view using Theme tokens
+//  Sprint result view - Full screen immersive modal
 //
 
 import SwiftUI
@@ -10,13 +10,17 @@ import SwiftUI
 struct SprintResultView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var statsManager: StatsManager
+
     let correctCount: Int
     let totalAttempts: Int
     let difficulty: Difficulty
-    @Binding var navigationPath: NavigationPath
+    let duration: Duration
+    let onDismiss: () -> Void
+    let onPlayAgain: () -> Void
 
     @State private var hasUpdatedXP = false
     @State private var showXPAnimation = false
+    @State private var showContent = false
 
     private var accuracy: Double {
         guard totalAttempts > 0 else { return 0 }
@@ -28,43 +32,76 @@ struct SprintResultView: View {
     }
 
     private var performanceMessage: String {
-        if correctCount >= 15 {
+        if correctCount >= 20 {
             return "Outstanding! 🏆"
+        } else if correctCount >= 15 {
+            return "Excellent! 🌟"
         } else if correctCount >= 10 {
-            return "Great job! 🌟"
+            return "Great job! 💪"
         } else if correctCount >= 5 {
-            return "Good effort! 💪"
+            return "Good effort! 👍"
         } else {
             return "Keep practicing! 📚"
         }
     }
 
+    private var performanceEmoji: String {
+        if correctCount >= 20 { return "🏆" }
+        else if correctCount >= 15 { return "🌟" }
+        else if correctCount >= 10 { return "💪" }
+        else if correctCount >= 5 { return "👍" }
+        else { return "📚" }
+    }
+
     var body: some View {
-        ScrollView {
-            VStack(spacing: Spacing.lg) {
-                // Result header
-                resultHeader
+        ZStack {
+            Theme.background
+                .ignoresSafeArea()
 
-                // Stats grid
-                statsGrid
+            ScrollView {
+                VStack(spacing: Spacing.lg) {
+                    // Close button
+                    HStack {
+                        Spacer()
+                        Button {
+                            onDismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(Theme.textSecondary)
+                                .frame(width: 40, height: 40)
+                                .background(Theme.surfaceElevated)
+                                .clipShape(Circle())
+                        }
+                    }
+                    .padding(.top, Spacing.lg)
 
-                // XP earned
-                xpCard
+                    // Result header
+                    resultHeader
 
-                Spacer(minLength: 40)
+                    // Stats grid
+                    statsGrid
 
-                // Action buttons
-                actionButtons
+                    // XP earned
+                    xpCard
+
+                    Spacer(minLength: 40)
+
+                    // Action buttons
+                    actionButtons
+                }
+                .padding(.horizontal, Spacing.md)
+                .padding(.bottom, Spacing.xl)
             }
-            .padding(Spacing.md)
+            .scrollIndicators(.hidden)
+            .opacity(showContent ? 1 : 0)
+            .scaleEffect(showContent ? 1 : 0.9)
         }
-        .scrollIndicators(.hidden)
-        .background(Theme.background)
-        .navigationTitle("Results")
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
         .onAppear {
             updateXPIfNeeded()
+            withAnimation(Motion.spring.delay(0.1)) {
+                showContent = true
+            }
         }
     }
 
@@ -79,22 +116,26 @@ struct SprintResultView: View {
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 100, height: 100)
+                    .frame(width: 120, height: 120)
 
-                Image(systemName: "flag.checkered")
-                    .font(.system(size: 44))
-                    .foregroundColor(Theme.sprint)
+                Text(performanceEmoji)
+                    .font(.system(size: 60))
             }
 
             Text("Sprint Complete!")
-                .font(Typography.heading1)
+                .font(Typography.displaySmall)
                 .foregroundColor(Theme.textPrimary)
 
             Text(performanceMessage)
                 .font(Typography.heading3)
                 .foregroundColor(Theme.textSecondary)
+
+            // Duration info
+            Text("\(duration.displayTime) • \(difficulty.rawValue)")
+                .font(Typography.caption)
+                .foregroundColor(Theme.textTertiary)
         }
-        .padding(.top, Spacing.lg)
+        .padding(.top, Spacing.md)
     }
 
     private var statsGrid: some View {
@@ -135,10 +176,6 @@ struct SprintResultView: View {
             }
             .scaleEffect(showXPAnimation ? 1.1 : 1.0)
             .animation(Motion.bounce, value: showXPAnimation)
-
-            Text("Difficulty: \(difficulty.rawValue)")
-                .font(Typography.caption)
-                .foregroundColor(Theme.textSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(Spacing.lg)
@@ -155,10 +192,10 @@ struct SprintResultView: View {
                 .stroke(Theme.xp.opacity(0.3), lineWidth: 1)
         )
         .onAppear {
-            withAnimation(Motion.ease(Motion.normal).delay(0.3)) {
+            withAnimation(Motion.ease(Motion.normal).delay(0.5)) {
                 showXPAnimation = true
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                 withAnimation {
                     showXPAnimation = false
                 }
@@ -168,24 +205,25 @@ struct SprintResultView: View {
 
     private var actionButtons: some View {
         VStack(spacing: Spacing.smd) {
-            PrimaryButton(title: "Try Again", color: Theme.sprint) {
-                if navigationPath.count >= 2 {
-                    navigationPath.removeLast(2)
-                    navigationPath.append(NavigationDestination.arithmeticSetup)
-                }
+            PrimaryButton(title: "Play Again", color: Theme.sprint) {
+                onPlayAgain()
             }
 
             SecondaryButton(title: "Back Home") {
-                navigationPath = NavigationPath()
+                onDismiss()
             }
         }
-        .padding(.bottom, Spacing.lg)
     }
 
     private func updateXPIfNeeded() {
         guard !hasUpdatedXP else { return }
         hasUpdatedXP = true
         appState.addArithmeticXP(correctCount: correctCount)
+
+        // Play celebration sound for good performance
+        if correctCount >= 5 {
+            Sound.celebration()
+        }
 
         // Record session to stats
         let session = SessionRecord(
@@ -199,14 +237,14 @@ struct SprintResultView: View {
 }
 
 #Preview {
-    NavigationStack {
-        SprintResultView(
-            correctCount: 12,
-            totalAttempts: 15,
-            difficulty: .medium,
-            navigationPath: .constant(NavigationPath())
-        )
-        .environmentObject(AppState())
-        .environmentObject(StatsManager())
-    }
+    SprintResultView(
+        correctCount: 12,
+        totalAttempts: 15,
+        difficulty: .medium,
+        duration: .blitz,
+        onDismiss: {},
+        onPlayAgain: {}
+    )
+    .environmentObject(AppState())
+    .environmentObject(StatsManager())
 }

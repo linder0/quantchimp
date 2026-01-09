@@ -93,13 +93,6 @@ struct GetStartedView: View {
                 }
 
                 Spacer()
-                    .frame(height: Spacing.xl)
-
-                // Summary card
-                summaryCard
-                    .padding(.horizontal, Spacing.lg)
-
-                Spacer()
 
                 // Navigation buttons
                 VStack(spacing: Spacing.smd) {
@@ -203,6 +196,10 @@ struct GetStartedView: View {
 
     private func triggerConfetti() {
         showConfetti = true
+
+        // Play celebration sound
+        Sound.celebration()
+        Haptic.success()
 
         // Create confetti pieces
         let width = viewSize.width > 0 ? viewSize.width : 400

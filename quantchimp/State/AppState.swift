@@ -39,7 +39,10 @@ class AppState: ObservableObject {
     }
 
     @Published var userProfile: UserProfile {
-        didSet { saveUserProfile() }
+        didSet {
+            saveUserProfile()
+            syncAudioSettings()
+        }
     }
 
     @Published var hasCompletedOnboarding: Bool {
@@ -80,6 +83,14 @@ class AppState: ObservableObject {
         } else {
             self.userProfile = UserProfile.default
         }
+
+        // Sync audio settings on launch
+        syncAudioSettings()
+    }
+
+    /// Sync sound settings with SoundManager
+    private func syncAudioSettings() {
+        SoundManager.shared.setSoundsEnabled(userProfile.soundEnabled)
     }
 
     // MARK: - Streak Logic

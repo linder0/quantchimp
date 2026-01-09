@@ -2,7 +2,7 @@
 //  DailyResultView.swift
 //  quantchimp
 //
-//  Daily result view using Theme tokens
+//  Daily result view for open-ended quant questions
 //
 
 import SwiftUI
@@ -12,6 +12,7 @@ struct DailyResultView: View {
     @EnvironmentObject var statsManager: StatsManager
     let problem: DailyProblem
     let isCorrect: Bool
+    let userAnswer: String
     @Binding var navigationPath: NavigationPath
 
     @State private var hasUpdatedStats = false
@@ -32,11 +33,11 @@ struct DailyResultView: View {
                     xpBadge
                 }
 
+                // Your answer vs correct answer
+                answersComparison
+
                 // Explanation card
                 explanationCard
-
-                // Correct answer
-                correctAnswerCard
 
                 Spacer(minLength: 40)
 
@@ -114,6 +115,56 @@ struct DailyResultView: View {
         }
     }
 
+    private var answersComparison: some View {
+        VStack(spacing: Spacing.smd) {
+            // Your answer
+            HStack {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text("Your Answer")
+                        .font(Typography.caption)
+                        .foregroundColor(Theme.textSecondary)
+
+                    Text(userAnswer)
+                        .font(Typography.heading3)
+                        .foregroundColor(isCorrect ? Theme.success : Theme.error)
+                }
+
+                Spacer()
+
+                Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    .font(.title2)
+                    .foregroundColor(isCorrect ? Theme.success : Theme.error)
+            }
+            .padding(Spacing.md)
+            .background(isCorrect ? Theme.success.opacity(0.1) : Theme.error.opacity(0.1))
+            .cornerRadius(Radius.lg)
+
+            // Correct answer (show if incorrect)
+            if !isCorrect {
+                HStack {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text("Correct Answer")
+                            .font(Typography.caption)
+                            .foregroundColor(Theme.textSecondary)
+
+                        Text(problem.answer)
+                            .font(Typography.heading3)
+                            .foregroundColor(Theme.success)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(Theme.success)
+                }
+                .padding(Spacing.md)
+                .background(Theme.success.opacity(0.1))
+                .cornerRadius(Radius.lg)
+            }
+        }
+    }
+
     private var explanationCard: some View {
         VStack(alignment: .leading, spacing: Spacing.smd) {
             HStack {
@@ -134,32 +185,13 @@ struct DailyResultView: View {
         .cardStyle()
     }
 
-    private var correctAnswerCard: some View {
-        VStack(alignment: .leading, spacing: Spacing.smd) {
-            Text("Correct Answer")
-                .font(Typography.headline)
-                .foregroundColor(Theme.success)
-
-            Text(problem.choices[problem.correctIndex])
-                .font(Typography.heading3)
-                .foregroundColor(Theme.textPrimary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(Spacing.lg)
-        .background(Theme.success.opacity(0.1))
-        .overlay(
-            RoundedRectangle(cornerRadius: Radius.lg)
-                .stroke(Theme.success.opacity(0.3), lineWidth: 2)
-        )
-        .cornerRadius(Radius.lg)
-    }
-
     private func updateStatsIfNeeded() {
         guard !hasUpdatedStats else { return }
         hasUpdatedStats = true
 
         if isCorrect {
             appState.updateStreakAndXPForDaily()
+            Sound.celebration()
         }
 
         // Record session to stats
@@ -178,6 +210,7 @@ struct DailyResultView: View {
         DailyResultView(
             problem: DailyPuzzleBank.puzzles[0],
             isCorrect: true,
+            userAnswer: "21/32",
             navigationPath: .constant(NavigationPath())
         )
         .environmentObject(AppState())

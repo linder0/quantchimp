@@ -146,6 +146,30 @@ struct ProfileView: View {
                         title: "Version",
                         subtitle: "1.0.0"
                     )
+
+                    #if DEBUG
+                    Divider()
+                        .background(Theme.surfaceBorder)
+                        .padding(.leading, 52)
+
+                    Button {
+                        appState.hasCompletedOnboarding = false
+                    } label: {
+                        HStack(spacing: Spacing.md) {
+                            Image(systemName: "arrow.counterclockwise")
+                                .font(.title3)
+                                .foregroundColor(Theme.error)
+                                .frame(width: 28)
+
+                            Text("Reset Onboarding")
+                                .font(Typography.body)
+                                .foregroundColor(Theme.error)
+
+                            Spacer()
+                        }
+                        .padding(Spacing.md)
+                    }
+                    #endif
                 }
                 .cardStyle()
             }
