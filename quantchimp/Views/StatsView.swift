@@ -31,7 +31,7 @@ struct StatsView: View {
 
     private var summarySection: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
-            Text("Overview")
+            Text("OVERVIEW")
                 .font(Typography.headline)
                 .foregroundColor(Theme.textPrimary)
 
@@ -62,7 +62,7 @@ struct StatsView: View {
 
     private var modeBreakdownSection: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
-            Text("By Mode")
+            Text("BY MODE")
                 .font(Typography.headline)
                 .foregroundColor(Theme.textPrimary)
 
@@ -84,15 +84,16 @@ struct StatsView: View {
 
     private var sessionHistorySection: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
-            Text("Recent Sessions")
+            Text("RECENT SESSIONS")
                 .font(Typography.headline)
                 .foregroundColor(Theme.textPrimary)
 
             if statsManager.recentSessions.isEmpty {
                 VStack(spacing: Spacing.smd) {
-                    Image(systemName: "clock.arrow.circlepath")
-                        .font(.system(size: 40))
-                        .foregroundColor(Theme.textSecondary)
+                    Image("monkey_no_sessions")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 100, height: 100)
 
                     Text("No sessions yet")
                         .font(Typography.bodyBold)

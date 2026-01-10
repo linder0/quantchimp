@@ -41,21 +41,10 @@ struct FriendsView: View {
 
     private var emptyStateView: some View {
         VStack(spacing: Spacing.lg) {
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Theme.accent.opacity(0.25), Theme.xp.opacity(0.15)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 140, height: 140)
-
-                Image(systemName: "person.2.fill")
-                    .font(.system(size: 50))
-                    .foregroundColor(Theme.accent)
-            }
+            Image("monkey_no_friends")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 140, height: 140)
 
             Text("No friends yet")
                 .font(Typography.heading2)
@@ -92,7 +81,7 @@ struct FriendsView: View {
 
     private var comingSoonSection: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
-            Text("Coming Soon")
+            Text("COMING SOON")
                 .font(Typography.headline)
                 .foregroundColor(Theme.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)

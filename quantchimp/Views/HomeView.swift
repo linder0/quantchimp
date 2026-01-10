@@ -90,20 +90,10 @@ struct HomeView: View {
             // Header content
             HStack(spacing: Spacing.smd) {
                 // Avatar - shrinks on collapse
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [Theme.accent.opacity(0.3), Theme.xp.opacity(0.2)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-
-                    Text(appState.userProfile.avatarEmoji)
-                        .font(.system(size: isCollapsed ? 20 : 32))
-                }
-                .frame(width: isCollapsed ? 40 : 64, height: isCollapsed ? 40 : 64)
+                Image(appState.userProfile.avatarImage)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: isCollapsed ? 40 : 64, height: isCollapsed ? 40 : 64)
 
                 // Info section
                 VStack(alignment: .leading, spacing: isCollapsed ? 2 : Spacing.xs) {
@@ -158,7 +148,7 @@ struct HomeView: View {
             .padding(.top, 60)
             .padding(.bottom, isCollapsed ? 10 : Spacing.md)
             .frame(maxWidth: .infinity)
-            .background(Theme.surface)
+            .background(Theme.surfaceElevated.overlay(Color.white.opacity(0.05)))
             .ignoresSafeArea(edges: .top)
             .shadow(
                 color: isCollapsed ? Shadow.md.color : .clear,
@@ -182,7 +172,7 @@ struct HomeView: View {
                 }
                 .padding(.horizontal, Spacing.md)
                 .padding(.bottom, Spacing.smd)
-                .background(Theme.surface)
+                .background(Theme.surfaceElevated.overlay(Color.white.opacity(0.05)))
                 .opacity(1 - collapseProgress)
             }
         }
@@ -191,70 +181,63 @@ struct HomeView: View {
 
     private var gameModesSection: some View {
         VStack(alignment: .leading, spacing: Spacing.smd) {
-            Text("Play")
+            Text("PLAY")
                 .font(Typography.headline)
                 .foregroundColor(Theme.textPrimary)
 
-            VStack(spacing: Spacing.smd) {
-                // Daily Puzzle
-                PlayOptionTile(
-                    icon: "brain.head.profile",
-                    emoji: "🧠",
+            // Active game modes - side by side cards
+            HStack(spacing: Spacing.smd) {
+                PlayOptionCard(
+                    imageName: "monkey_daily_puzzle",
                     title: "Daily Puzzle",
-                    subtitle: appState.completedDailyToday ? "Completed today" : "Ready to play",
+                    subtitle: appState.completedDailyToday ? "Completed" : "Ready to play",
                     isCompleted: appState.completedDailyToday,
-                    color: Theme.daily
+                    imageOffset: 10
                 ) {
                     navigationPath.append(NavigationDestination.dailyPuzzle)
                 }
 
-                // Arithmetic Sprint
-                PlayOptionTile(
-                    icon: "timer",
-                    emoji: "⚡",
-                    title: "Arithmetic Sprint",
+                PlayOptionCard(
+                    imageName: "monkey_sprint",
+                    title: "Sprint",
                     subtitle: "Speed challenge",
-                    isCompleted: false,
-                    color: Theme.sprint
+                    imageOffset: 20,
+                    imageSize: 160
                 ) {
                     showSprintFlow = true
                 }
-
-                // Future modes (disabled)
-                PlayOptionTile(
-                    icon: "trophy.fill",
-                    emoji: "🏆",
-                    title: "Tournaments",
-                    subtitle: "Coming soon",
-                    isCompleted: false,
-                    color: Theme.xp,
-                    isDisabled: true
-                ) {}
-
-                PlayOptionTile(
-                    icon: "person.2.fill",
-                    emoji: "🤝",
-                    title: "Challenge a Friend",
-                    subtitle: "Coming soon",
-                    isCompleted: false,
-                    color: Theme.success,
-                    isDisabled: true
-                ) {}
             }
+
+            // Future modes (disabled)
+            PlayOptionTile(
+                imageName: "monkey_tournament",
+                title: "Tournaments",
+                subtitle: "Coming soon",
+                isDisabled: true
+            ) {}
+
+            PlayOptionTile(
+                imageName: "monkey_challenge",
+                title: "Challenge a Friend",
+                subtitle: "Coming soon",
+                isDisabled: true
+            ) {}
         }
     }
 
     private var gameHistorySection: some View {
         VStack(alignment: .leading, spacing: Spacing.smd) {
-            Text("Recent Games")
+            Text("RECENT GAMES")
                 .font(Typography.headline)
                 .foregroundColor(Theme.textPrimary)
 
             if statsManager.sessionHistory.isEmpty {
                 // Empty state
                 VStack(spacing: Spacing.md) {
-                    Text("🎮")
-                        .font(.system(size: 48))
+                    Image("monkey_no_games")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 100, height: 100)
 
                     Text("No games yet")
                         .font(Typography.headline)

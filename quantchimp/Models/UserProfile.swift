@@ -94,7 +94,7 @@ enum ReminderPreset: String, Codable, CaseIterable, Identifiable {
 
 struct UserProfile: Codable {
     var displayName: String
-    var avatarEmoji: String
+    var avatarImage: String
     var soundEnabled: Bool
     var hapticsEnabled: Bool
 
@@ -106,7 +106,7 @@ struct UserProfile: Codable {
 
     static let `default` = UserProfile(
         displayName: "Player",
-        avatarEmoji: "🐵",
+        avatarImage: "avatar_default",
         soundEnabled: true,
         hapticsEnabled: true,
         goal: nil,
@@ -116,7 +116,15 @@ struct UserProfile: Codable {
     )
 
     static let avatarOptions = [
-        "🐵", "🦍", "🐒", "🧠", "🎯", "⚡️", "🔥", "⭐️", "🏆", "💪",
-        "🚀", "🎮", "📊", "🧮", "🎲", "🦊", "🐼", "🦁", "🐯", "🐻"
+        "avatar_default",
+        "avatar_thinking",
+        "avatar_excited",
+        "avatar_cool",
+        "avatar_champion",
+        "avatar_ninja",
+        "avatar_scientist",
+        "avatar_wizard",
+        "avatar_astronaut",
+        "avatar_pirate"
     ]
 }

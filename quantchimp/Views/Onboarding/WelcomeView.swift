@@ -33,29 +33,16 @@ struct WelcomeView: View {
                                 Color.clear
                             ],
                             center: .center,
-                            startRadius: 40,
-                            endRadius: 120
+                            startRadius: 60,
+                            endRadius: 140
                         )
                     )
-                    .frame(width: 240, height: 240)
+                    .frame(width: 280, height: 280)
 
-                // Mascot circle
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Theme.accent.opacity(0.2), Theme.xp.opacity(0.15)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 160, height: 160)
-                    .overlay(
-                        Circle()
-                            .stroke(Theme.accent.opacity(0.3), lineWidth: 3)
-                    )
-
-                Text("🐵")
-                    .font(.system(size: 80))
+                Image("monkey_welcome")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 180, height: 180)
                     .offset(y: mascotBounce)
             }
             .scaleEffect(mascotScale)

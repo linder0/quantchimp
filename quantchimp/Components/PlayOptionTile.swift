@@ -7,13 +7,96 @@
 
 import SwiftUI
 
-struct PlayOptionTile: View {
-    let icon: String
-    let emoji: String
+// MARK: - Large Card Style (for active game modes)
+struct PlayOptionCard: View {
+    let imageName: String
     let title: String
     let subtitle: String
-    let isCompleted: Bool
-    let color: Color
+    var isCompleted: Bool = false
+    var imageOffset: CGFloat = 20
+    var imageSize: CGFloat = 140
+    let action: () -> Void
+
+    @State private var isPressed = false
+    private let pressDepth: CGFloat = 4
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            // Shadow card underneath (golden tint)
+            RoundedRectangle(cornerRadius: Radius.lg)
+                .fill(Theme.xp.opacity(0.6))
+                .offset(y: pressDepth)
+
+            // Main card content
+            VStack(spacing: 0) {
+                // Image area
+                ZStack(alignment: .topTrailing) {
+                    Image(imageName)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: imageSize)
+                        .offset(y: imageOffset)
+
+                    // Completed checkmark
+                    if isCompleted {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(Theme.success)
+                            .padding(Spacing.sm)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 150)
+                .clipped()
+
+                // Text area with top border
+                VStack(spacing: Spacing.xs) {
+                    Text(title)
+                        .font(Typography.headline)
+                        .foregroundColor(Theme.textPrimary)
+
+                    Text(subtitle)
+                        .font(Typography.caption)
+                        .foregroundColor(Theme.textSecondary)
+                }
+                .padding(.top, Spacing.lg)
+                .padding(.bottom, Spacing.md)
+                .frame(maxWidth: .infinity)
+                .background(Color.white.opacity(0.05))
+                .overlay(
+                    Rectangle()
+                        .fill(Theme.surfaceBorder)
+                        .frame(height: 1),
+                    alignment: .top
+                )
+            }
+            .background(Theme.surfaceElevated)
+            .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
+            .offset(y: isPressed ? pressDepth : 0)
+            .animation(.easeOut(duration: 0.08), value: isPressed)
+        }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    if !isPressed {
+                        isPressed = true
+                        Haptic.light()
+                    }
+                }
+                .onEnded { _ in
+                    isPressed = false
+                    action()
+                }
+        )
+    }
+}
+
+// MARK: - Compact Row Style (for disabled/coming soon modes)
+struct PlayOptionTile: View {
+    let imageName: String
+    let title: String
+    let subtitle: String
+    var isCompleted: Bool = false
     var isDisabled: Bool = false
     let action: () -> Void
 
@@ -23,20 +106,17 @@ struct PlayOptionTile: View {
             action()
         }) {
             HStack(spacing: Spacing.md) {
-                // Emoji icon with subtle background
-                ZStack {
-                    Circle()
-                        .fill(color.opacity(0.15))
-                        .frame(width: 50, height: 50)
-
-                    Text(emoji)
-                        .font(.system(size: 26))
-                }
+                // Monkey image
+                Image(imageName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 44, height: 44)
+                    .opacity(isDisabled ? 0.5 : 1)
 
                 // Text content
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(title)
-                        .font(Typography.headline)
+                        .font(Typography.bodyBold)
                         .foregroundColor(isDisabled ? Theme.textTertiary : Theme.textPrimary)
 
                     Text(subtitle)
@@ -49,61 +129,55 @@ struct PlayOptionTile: View {
                 // Status indicator
                 if isCompleted {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.title2)
+                        .font(.title3)
                         .foregroundColor(Theme.success)
-                } else if !isDisabled {
+                } else if isDisabled {
+                    Image(systemName: "lock.fill")
+                        .font(.subheadline)
+                        .foregroundColor(Theme.textTertiary)
+                } else {
                     Image(systemName: "chevron.right")
                         .font(.subheadline.weight(.semibold))
                         .foregroundColor(Theme.textTertiary)
                 }
             }
-            .padding(.horizontal, Spacing.md)
-            .padding(.vertical, Spacing.md)
+            .padding(Spacing.md)
             .background(
-                RoundedRectangle(cornerRadius: Radius.lg)
-                    .fill(Theme.surface)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: Radius.lg)
-                    .stroke(
-                        isCompleted ? Theme.success.opacity(0.3) : Theme.surfaceBorder,
-                        lineWidth: 1
-                    )
+                RoundedRectangle(cornerRadius: Radius.md)
+                    .fill(Theme.surfaceElevated)
             )
         }
         .disabled(isDisabled)
-        .opacity(isDisabled ? 0.6 : 1)
+        .opacity(isDisabled ? 0.7 : 1)
         .pressable()
     }
 }
 
 #Preview {
     VStack(spacing: Spacing.smd) {
-        PlayOptionTile(
-            icon: "brain.head.profile",
-            emoji: "🧠",
-            title: "Daily Puzzle",
-            subtitle: "Ready to play",
-            isCompleted: false,
-            color: Theme.daily
-        ) {}
+        // Card style for active modes
+        HStack(spacing: Spacing.smd) {
+            PlayOptionCard(
+                imageName: "monkey_daily_puzzle",
+                title: "Daily Puzzle",
+                subtitle: "Ready to play",
+                imageOffset: 10
+            ) {}
 
-        PlayOptionTile(
-            icon: "timer",
-            emoji: "⚡",
-            title: "Arithmetic Sprint",
-            subtitle: "Completed",
-            isCompleted: true,
-            color: Theme.sprint
-        ) {}
+            PlayOptionCard(
+                imageName: "monkey_sprint",
+                title: "Sprint",
+                subtitle: "Speed challenge",
+                isCompleted: true,
+                imageOffset: 20
+            ) {}
+        }
 
+        // Row style for disabled modes
         PlayOptionTile(
-            icon: "trophy.fill",
-            emoji: "🏆",
+            imageName: "monkey_tournament",
             title: "Tournaments",
             subtitle: "Coming soon",
-            isCompleted: false,
-            color: Theme.xp,
             isDisabled: true
         ) {}
     }

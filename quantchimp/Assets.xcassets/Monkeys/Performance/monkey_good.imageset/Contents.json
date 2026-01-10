@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "monkey_good.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

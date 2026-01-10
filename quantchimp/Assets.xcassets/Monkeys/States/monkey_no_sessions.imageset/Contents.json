@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "monkey_no_sessions.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

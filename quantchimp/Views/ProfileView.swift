@@ -31,7 +31,7 @@ struct ProfileView: View {
         .scrollIndicators(.hidden)
         .background(Theme.background)
         .sheet(isPresented: $showAvatarPicker) {
-            AvatarPickerSheet(selectedEmoji: $appState.userProfile.avatarEmoji)
+            AvatarPickerSheet(selectedAvatar: $appState.userProfile.avatarImage)
         }
         .alert("Edit Name", isPresented: $isEditingName) {
             TextField("Display Name", text: $editedName)
@@ -53,18 +53,10 @@ struct ProfileView: View {
                 showAvatarPicker = true
             } label: {
                 ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [Theme.accent.opacity(0.3), Theme.xp.opacity(0.2)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                    Image(appState.userProfile.avatarImage)
+                        .resizable()
+                        .scaledToFit()
                         .frame(width: 120, height: 120)
-
-                    Text(appState.userProfile.avatarEmoji)
-                        .font(.system(size: 60))
 
                     // Edit badge
                     Circle()
@@ -75,7 +67,7 @@ struct ProfileView: View {
                                 .font(.caption)
                                 .foregroundColor(Theme.background)
                         )
-                        .offset(x: 40, y: 40)
+                        .offset(x: 44, y: 44)
                 }
             }
 
@@ -100,7 +92,7 @@ struct ProfileView: View {
 
     private var settingsSection: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
-            Text("Settings")
+            Text("SETTINGS")
                 .font(Typography.headline)
                 .foregroundColor(Theme.textPrimary)
 
@@ -135,7 +127,7 @@ struct ProfileView: View {
 
             // About section
             VStack(alignment: .leading, spacing: Spacing.md) {
-                Text("About")
+                Text("ABOUT")
                     .font(Typography.headline)
                     .foregroundColor(Theme.textPrimary)
                     .padding(.top, Spacing.sm)
@@ -230,7 +222,7 @@ struct SettingsRow: View {
 
 struct AvatarPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @Binding var selectedEmoji: String
+    @Binding var selectedAvatar: String
 
     private let columns = Array(repeating: GridItem(.flexible()), count: 5)
 
@@ -238,16 +230,18 @@ struct AvatarPickerSheet: View {
         NavigationStack {
             ScrollView {
                 LazyVGrid(columns: columns, spacing: Spacing.md) {
-                    ForEach(UserProfile.avatarOptions, id: \.self) { emoji in
+                    ForEach(UserProfile.avatarOptions, id: \.self) { avatar in
                         Button {
-                            selectedEmoji = emoji
+                            selectedAvatar = avatar
                             dismiss()
                         } label: {
-                            Text(emoji)
-                                .font(.system(size: 40))
-                                .frame(width: 60, height: 60)
+                            Image(avatar)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 50, height: 50)
+                                .padding(5)
                                 .background(
-                                    selectedEmoji == emoji ?
+                                    selectedAvatar == avatar ?
                                     Theme.accent.opacity(0.2) :
                                     Theme.surfaceElevated
                                 )
@@ -255,7 +249,7 @@ struct AvatarPickerSheet: View {
                                 .overlay(
                                     RoundedRectangle(cornerRadius: Radius.md)
                                         .stroke(
-                                            selectedEmoji == emoji ? Theme.accent : Color.clear,
+                                            selectedAvatar == avatar ? Theme.accent : Color.clear,
                                             lineWidth: 2
                                         )
                                 )

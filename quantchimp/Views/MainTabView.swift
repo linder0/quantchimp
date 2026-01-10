@@ -15,10 +15,10 @@ enum Tab: String, CaseIterable {
 
     var icon: String {
         switch self {
-        case .home: return "house.fill"
-        case .stats: return "chart.bar.fill"
-        case .friends: return "person.2.fill"
-        case .profile: return "person.fill"
+        case .home: return "tab_home"
+        case .stats: return "tab_stats"
+        case .friends: return "tab_friends"
+        case .profile: return "tab_profile"
         }
     }
 }
@@ -72,22 +72,10 @@ struct CustomTabBar: View {
                 }
             }
         }
-        .padding(.top, Spacing.sm)
+        .padding(.top, Spacing.smd)
         .padding(.bottom, Spacing.sm)
         .frame(maxWidth: .infinity)
-        .background(
-            Theme.surface
-                .overlay(
-                    Rectangle()
-                        .fill(Theme.surfaceBorder)
-                        .frame(height: 1),
-                    alignment: .top
-                )
-        )
-        .background(
-            Theme.surface
-                .ignoresSafeArea(edges: .bottom)
-        )
+        .background(Theme.surface.ignoresSafeArea(edges: .bottom))
     }
 }
 
@@ -97,11 +85,29 @@ struct TabBarButton: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
+        Button(action: {
+            Haptic.light()
+            action()
+        }) {
             VStack(spacing: Spacing.xs) {
-                Image(systemName: tab.icon)
-                    .font(.system(size: 22))
-                    .foregroundColor(isSelected ? Theme.accent : Theme.textTertiary)
+                ZStack {
+                    // Highlight background for selected tab
+                    if isSelected {
+                        RoundedRectangle(cornerRadius: Radius.md)
+                            .fill(Color.white.opacity(0.1))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: Radius.md)
+                                    .stroke(Theme.xp.opacity(0.6), lineWidth: 1.5)
+                            )
+                            .frame(width: 52, height: 38)
+                    }
+
+                    Image(tab.icon)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 32, height: 32)
+                        .opacity(isSelected ? 1.0 : 0.5)
+                }
             }
             .frame(maxWidth: .infinity)
         }

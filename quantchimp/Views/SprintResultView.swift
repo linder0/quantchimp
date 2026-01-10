@@ -33,24 +33,24 @@ struct SprintResultView: View {
 
     private var performanceMessage: String {
         if correctCount >= 20 {
-            return "Outstanding! 🏆"
+            return "Outstanding!"
         } else if correctCount >= 15 {
-            return "Excellent! 🌟"
+            return "Excellent!"
         } else if correctCount >= 10 {
-            return "Great job! 💪"
+            return "Great job!"
         } else if correctCount >= 5 {
-            return "Good effort! 👍"
+            return "Good effort!"
         } else {
-            return "Keep practicing! 📚"
+            return "Keep practicing!"
         }
     }
 
-    private var performanceEmoji: String {
-        if correctCount >= 20 { return "🏆" }
-        else if correctCount >= 15 { return "🌟" }
-        else if correctCount >= 10 { return "💪" }
-        else if correctCount >= 5 { return "👍" }
-        else { return "📚" }
+    private var performanceImage: String {
+        if correctCount >= 20 { return "monkey_outstanding" }
+        else if correctCount >= 15 { return "monkey_excellent" }
+        else if correctCount >= 10 { return "monkey_great" }
+        else if correctCount >= 5 { return "monkey_good" }
+        else { return "monkey_practice" }
     }
 
     var body: some View {
@@ -107,20 +107,10 @@ struct SprintResultView: View {
 
     private var resultHeader: some View {
         VStack(spacing: Spacing.md) {
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Theme.sprint.opacity(0.3), Theme.level.opacity(0.2)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 120, height: 120)
-
-                Text(performanceEmoji)
-                    .font(.system(size: 60))
-            }
+            Image(performanceImage)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 120, height: 120)
 
             Text("Sprint Complete!")
                 .font(Typography.displaySmall)

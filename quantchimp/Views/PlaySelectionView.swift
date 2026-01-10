@@ -41,25 +41,15 @@ struct PlaySelectionView: View {
                     .padding(.horizontal, Spacing.md)
 
                     // Title
-                    Text("Play")
+                    Text("PLAY")
                         .font(Typography.displaySmall)
                         .foregroundColor(Theme.textPrimary)
 
                     // Mascot
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [Theme.accent.opacity(0.3), Theme.xp.opacity(0.2)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 100, height: 100)
-
-                        Text("🐵")
-                            .font(.system(size: 50))
-                    }
+                    Image("avatar_default")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 100, height: 100)
                 }
                 .padding(.top, Spacing.lg)
                 .padding(.bottom, Spacing.xl)
@@ -68,50 +58,43 @@ struct PlaySelectionView: View {
 
                 // Game mode options
                 VStack(spacing: Spacing.smd) {
-                    // Daily Puzzle
-                    PlayOptionTile(
-                        icon: "brain.head.profile",
-                        emoji: "🧠",
-                        title: "Daily Puzzle",
-                        subtitle: appState.completedDailyToday ? "Completed today" : "Ready to play",
-                        isCompleted: appState.completedDailyToday,
-                        color: Theme.daily
-                    ) {
-                        dismiss()
-                        onSelectDaily()
-                    }
+                    // Active game modes - side by side cards
+                    HStack(spacing: Spacing.smd) {
+                        PlayOptionCard(
+                            imageName: "monkey_daily_puzzle",
+                            title: "Daily Puzzle",
+                            subtitle: appState.completedDailyToday ? "Completed" : "Ready to play",
+                            isCompleted: appState.completedDailyToday,
+                            imageOffset: 10
+                        ) {
+                            dismiss()
+                            onSelectDaily()
+                        }
 
-                    // Arithmetic Sprint
-                    PlayOptionTile(
-                        icon: "timer",
-                        emoji: "⚡",
-                        title: "Arithmetic Sprint",
-                        subtitle: "60 second challenge",
-                        isCompleted: false,
-                        color: Theme.sprint
-                    ) {
-                        dismiss()
-                        onSelectSprint()
+                        PlayOptionCard(
+                            imageName: "monkey_sprint",
+                            title: "Sprint",
+                            subtitle: "60 second challenge",
+                            imageOffset: 20,
+                            imageSize: 160
+                        ) {
+                            dismiss()
+                            onSelectSprint()
+                        }
                     }
 
                     // Future modes (disabled)
                     PlayOptionTile(
-                        icon: "trophy.fill",
-                        emoji: "🏆",
+                        imageName: "monkey_tournament",
                         title: "Tournaments",
                         subtitle: "Coming soon",
-                        isCompleted: false,
-                        color: Theme.xp,
                         isDisabled: true
                     ) {}
 
                     PlayOptionTile(
-                        icon: "person.2.fill",
-                        emoji: "🤝",
+                        imageName: "monkey_challenge",
                         title: "Challenge a Friend",
                         subtitle: "Coming soon",
-                        isCompleted: false,
-                        color: Theme.success,
                         isDisabled: true
                     ) {}
                 }

@@ -40,18 +40,20 @@ struct SplashView: View {
             }
 
             VStack(spacing: Spacing.lg) {
-                // Chimp emoji with banana orbit
+                // Chimp with banana orbit
                 ZStack {
                     // Pulsing ring
                     Circle()
                         .stroke(Theme.accentGradient, lineWidth: 3)
-                        .frame(width: 140, height: 140)
+                        .frame(width: 160, height: 160)
                         .scaleEffect(pulseScale)
                         .opacity(2 - pulseScale)
 
                     // Main chimp
-                    Text("🐵")
-                        .font(.system(size: 80))
+                    Image("monkey_splash")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 140, height: 140)
                         .scaleEffect(isAnimating ? 1.05 : 0.95)
                         .animation(
                             .easeInOut(duration: 1.2).repeatForever(autoreverses: true),
@@ -61,10 +63,10 @@ struct SplashView: View {
                     // Orbiting banana
                     Text("🍌")
                         .font(.system(size: 32))
-                        .offset(x: 70)
+                        .offset(x: 85)
                         .rotationEffect(.degrees(bananaRotation))
                 }
-                .frame(width: 160, height: 160)
+                .frame(width: 180, height: 180)
 
                 VStack(spacing: Spacing.sm) {
                     // App name
