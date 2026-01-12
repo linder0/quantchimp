@@ -19,6 +19,7 @@ class AppState: ObservableObject {
         static let lastDailyCompletedDate = "quantchimp_lastDailyCompletedDate"
         static let userProfile = "quantchimp_userProfile"
         static let hasCompletedOnboarding = "quantchimp_hasCompletedOnboarding"
+        static let friends = "quantchimp_friends"
     }
 
     // MARK: - Published Properties
@@ -47,6 +48,10 @@ class AppState: ObservableObject {
 
     @Published var hasCompletedOnboarding: Bool {
         didSet { UserDefaults.standard.set(hasCompletedOnboarding, forKey: Keys.hasCompletedOnboarding) }
+    }
+
+    @Published var friends: [Friend] = [] {
+        didSet { saveFriends() }
     }
 
     // MARK: - Computed Properties
@@ -84,6 +89,12 @@ class AppState: ObservableObject {
             self.userProfile = UserProfile.default
         }
 
+        // Load friends
+        if let data = UserDefaults.standard.data(forKey: Keys.friends),
+           let decoded = try? JSONDecoder().decode([Friend].self, from: data) {
+            self.friends = decoded
+        }
+
         // Sync audio settings on launch
         syncAudioSettings()
     }
@@ -109,8 +120,7 @@ class AppState: ObservableObject {
     }
 
     func addArithmeticXP(correctCount: Int) {
-        let earned = min(correctCount * 10, 200)
-        xp += earned
+        xp += calculateXPEarned(correctCount: correctCount)
     }
 
     // MARK: - Date Helpers
@@ -131,6 +141,25 @@ class AppState: ObservableObject {
     private func saveUserProfile() {
         if let encoded = try? JSONEncoder().encode(userProfile) {
             UserDefaults.standard.set(encoded, forKey: Keys.userProfile)
+        }
+    }
+
+    // MARK: - Friends
+    func addFriend(_ friend: Friend) {
+        friends.append(friend)
+    }
+
+    func removeFriend(_ friend: Friend) {
+        friends.removeAll { $0.id == friend.id }
+    }
+
+    var hasFriends: Bool {
+        !friends.isEmpty
+    }
+
+    private func saveFriends() {
+        if let encoded = try? JSONEncoder().encode(friends) {
+            UserDefaults.standard.set(encoded, forKey: Keys.friends)
         }
     }
 }

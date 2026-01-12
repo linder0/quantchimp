@@ -16,7 +16,6 @@ struct DailyResultView: View {
     @Binding var navigationPath: NavigationPath
 
     @State private var hasUpdatedStats = false
-    @State private var showXPAnimation = false
 
     private var xpEarned: Int {
         isCorrect && !appState.completedDailyToday ? 50 : 0
@@ -89,30 +88,7 @@ struct DailyResultView: View {
     }
 
     private var xpBadge: some View {
-        HStack(spacing: Spacing.sm) {
-            Image(systemName: "star.fill")
-                .foregroundColor(Theme.xp)
-
-            Text("+\(xpEarned) XP")
-                .font(Typography.headline)
-                .foregroundColor(Theme.textPrimary)
-        }
-        .padding(.horizontal, Spacing.lg)
-        .padding(.vertical, Spacing.smd)
-        .background(Theme.xp.opacity(0.2))
-        .cornerRadius(Radius.full)
-        .scaleEffect(showXPAnimation ? 1.1 : 1.0)
-        .animation(Motion.bounce, value: showXPAnimation)
-        .onAppear {
-            withAnimation(Motion.ease(Motion.normal).delay(0.2)) {
-                showXPAnimation = true
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                withAnimation {
-                    showXPAnimation = false
-                }
-            }
-        }
+        XPEarnedBadge(xpEarned: xpEarned, style: .compact)
     }
 
     private var answersComparison: some View {

@@ -85,6 +85,10 @@ struct HomeView: View {
 
     // MARK: - Transforming Header
 
+    private var profileColor: Color {
+        Color(hex: appState.userProfile.profileColor.hex)
+    }
+
     private var transformingHeader: some View {
         VStack(spacing: 0) {
             // Header content
@@ -99,12 +103,12 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: isCollapsed ? 2 : Spacing.xs) {
                     Text(appState.userProfile.displayName)
                         .font(isCollapsed ? Typography.headline : Typography.heading2)
-                        .foregroundColor(Theme.textPrimary)
+                        .foregroundColor(.white)
 
                     if !isCollapsed {
                         Text("Level \(appState.currentLevel)")
                             .font(Typography.caption)
-                            .foregroundColor(Theme.textSecondary)
+                            .foregroundColor(.white.opacity(0.8))
                     }
                 }
 
@@ -118,13 +122,13 @@ struct HomeView: View {
 
                     Text("\(appState.streak)")
                         .font(isCollapsed ? Typography.caption : Typography.label)
-                        .foregroundColor(Theme.textPrimary)
+                        .foregroundColor(.white)
                 }
                 .padding(.horizontal, isCollapsed ? 10 : 14)
                 .padding(.vertical, isCollapsed ? 6 : 8)
                 .background(
                     Capsule()
-                        .fill(Theme.streak.opacity(0.15))
+                        .fill(.white.opacity(0.2))
                 )
 
                 // XP Badge
@@ -135,27 +139,19 @@ struct HomeView: View {
 
                     Text("\(appState.xp) XP")
                         .font(isCollapsed ? Typography.caption : Typography.label)
-                        .foregroundColor(Theme.textPrimary)
+                        .foregroundColor(.white)
                 }
                 .padding(.horizontal, isCollapsed ? 10 : 14)
                 .padding(.vertical, isCollapsed ? 6 : 8)
                 .background(
                     Capsule()
-                        .fill(Theme.xp.opacity(0.15))
+                        .fill(.white.opacity(0.2))
                 )
             }
             .padding(.horizontal, Spacing.md)
             .padding(.top, 60)
             .padding(.bottom, isCollapsed ? 10 : Spacing.md)
             .frame(maxWidth: .infinity)
-            .background(Theme.surfaceElevated.overlay(Color.white.opacity(0.05)))
-            .ignoresSafeArea(edges: .top)
-            .shadow(
-                color: isCollapsed ? Shadow.md.color : .clear,
-                radius: isCollapsed ? Shadow.md.radius : 0,
-                x: 0,
-                y: isCollapsed ? Shadow.md.y : 0
-            )
 
             // XP Progress bar - only when expanded
             if !isCollapsed {
@@ -165,17 +161,24 @@ struct HomeView: View {
                     HStack {
                         Text("\(appState.xpToNextLevel) XP to Level \(appState.currentLevel + 1)")
                             .font(Typography.captionSmall)
-                            .foregroundColor(Theme.textSecondary)
+                            .foregroundColor(.white.opacity(0.8))
 
                         Spacer()
                     }
                 }
                 .padding(.horizontal, Spacing.md)
                 .padding(.bottom, Spacing.smd)
-                .background(Theme.surfaceElevated.overlay(Color.white.opacity(0.05)))
                 .opacity(1 - collapseProgress)
             }
         }
+        .background(profileColor)
+        .ignoresSafeArea(edges: .top)
+        .shadow(
+            color: isCollapsed ? Shadow.md.color : .clear,
+            radius: isCollapsed ? Shadow.md.radius : 0,
+            x: 0,
+            y: isCollapsed ? Shadow.md.y : 0
+        )
         .animation(Motion.ease(Motion.quick), value: isCollapsed)
     }
 

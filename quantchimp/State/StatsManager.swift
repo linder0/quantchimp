@@ -28,24 +28,21 @@ class StatsManager: ObservableObject {
 
     // MARK: - Computed Properties
     var overallAccuracy: Double {
-        guard totalQuestions > 0 else { return 0 }
-        return Double(totalCorrect) / Double(totalQuestions) * 100
+        calculateAccuracy(correct: totalCorrect, total: totalQuestions)
     }
 
     var dailyAccuracy: Double {
         let dailySessions = sessionHistory.filter { $0.mode == .daily }
         let questions = dailySessions.reduce(0) { $0 + $1.questionsAnswered }
         let correct = dailySessions.reduce(0) { $0 + $1.correctCount }
-        guard questions > 0 else { return 0 }
-        return Double(correct) / Double(questions) * 100
+        return calculateAccuracy(correct: correct, total: questions)
     }
 
     var sprintAccuracy: Double {
         let sprintSessions = sessionHistory.filter { $0.mode == .sprint }
         let questions = sprintSessions.reduce(0) { $0 + $1.questionsAnswered }
         let correct = sprintSessions.reduce(0) { $0 + $1.correctCount }
-        guard questions > 0 else { return 0 }
-        return Double(correct) / Double(questions) * 100
+        return calculateAccuracy(correct: correct, total: questions)
     }
 
     var totalXPEarned: Int {

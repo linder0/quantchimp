@@ -90,6 +90,30 @@ enum ReminderPreset: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+// MARK: - Profile Color
+
+enum ProfileColor: String, Codable, CaseIterable, Identifiable {
+    case purple = "Purple"
+    case blue = "Blue"
+    case teal = "Teal"
+    case green = "Green"
+    case orange = "Orange"
+    case pink = "Pink"
+
+    var id: String { rawValue }
+
+    var hex: String {
+        switch self {
+        case .purple: return "A855F7"
+        case .blue: return "3B82F6"
+        case .teal: return "14B8A6"
+        case .green: return "10B981"
+        case .orange: return "F59E0B"
+        case .pink: return "EC4899"
+        }
+    }
+}
+
 // MARK: - User Profile
 
 struct UserProfile: Codable {
@@ -97,6 +121,7 @@ struct UserProfile: Codable {
     var avatarImage: String
     var soundEnabled: Bool
     var hapticsEnabled: Bool
+    var profileColor: ProfileColor
 
     // Onboarding fields
     var goal: UserGoal?
@@ -109,6 +134,7 @@ struct UserProfile: Codable {
         avatarImage: "avatar_default",
         soundEnabled: true,
         hapticsEnabled: true,
+        profileColor: .purple,
         goal: nil,
         dailyGoalMinutes: 10,
         reminderTime: nil,

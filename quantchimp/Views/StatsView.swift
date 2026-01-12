@@ -12,21 +12,69 @@ struct StatsView: View {
     @EnvironmentObject var appState: AppState
 
     var body: some View {
-        ScrollableViewWithHeader(title: "Stats", headerColor: Theme.surfaceElevated) {
-            VStack(spacing: Spacing.lg) {
-                // Summary section
-                summarySection
+        VStack(spacing: 0) {
+            // Custom header matching Friends style
+            statsHeader
 
-                // Mode breakdown
-                modeBreakdownSection
+            // Content area
+            ScrollView {
+                VStack(spacing: Spacing.lg) {
+                    // Summary section
+                    summarySection
 
-                // Session history
-                sessionHistorySection
+                    // Mode breakdown
+                    modeBreakdownSection
 
-                Spacer(minLength: 40)
+                    // Session history
+                    sessionHistorySection
+
+                    Spacer(minLength: 40)
+                }
+                .padding(Spacing.md)
             }
-            .padding(Spacing.md)
+            .scrollIndicators(.hidden)
+            .background(Theme.background)
         }
+        .background(Theme.background.ignoresSafeArea())
+    }
+
+    // MARK: - Header
+    private var statsHeader: some View {
+        HStack(alignment: .bottom, spacing: 0) {
+            // Text on left
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                Text("Stats")
+                    .font(Typography.heading1)
+                    .foregroundColor(.white)
+
+                Text("Track your progress")
+                    .font(Typography.caption)
+                    .foregroundColor(.white.opacity(0.8))
+            }
+            .padding(.leading, Spacing.md)
+            .padding(.bottom, Spacing.lg)
+
+            Spacer()
+
+            // Monkey on right - bigger to fill space
+            Image("monkey_great")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 200, height: 200)
+                .offset(x: -Spacing.md, y: -Spacing.sm)
+        }
+        .padding(.top, 56)
+        .padding(.leading, Spacing.md)
+        .frame(maxWidth: .infinity)
+        .background(
+            LinearGradient(
+                colors: [Theme.level, Theme.level.opacity(0.8)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea(edges: .top)
+        )
+        .clipped()
     }
 
     private var summarySection: some View {
@@ -52,7 +100,7 @@ struct StatsView: View {
 
                 StatCard(
                     icon: "percent",
-                    value: String(format: "%.0f%%", statsManager.overallAccuracy),
+                    value: formatAccuracy(statsManager.overallAccuracy),
                     label: "Accuracy",
                     color: Theme.level
                 )

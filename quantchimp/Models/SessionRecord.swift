@@ -36,8 +36,7 @@ struct SessionRecord: Identifiable, Codable {
     let xpEarned: Int
 
     var accuracy: Double {
-        guard questionsAnswered > 0 else { return 0 }
-        return Double(correctCount) / Double(questionsAnswered) * 100
+        calculateAccuracy(correct: correctCount, total: questionsAnswered)
     }
 
     init(mode: GameMode, questionsAnswered: Int, correctCount: Int, xpEarned: Int) {

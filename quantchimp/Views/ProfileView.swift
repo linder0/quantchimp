@@ -13,25 +13,36 @@ struct ProfileView: View {
     @State private var isEditingName = false
     @State private var editedName = ""
     @State private var showAvatarPicker = false
+    @State private var showColorPicker = false
+
+    private var profileColorValue: Color {
+        Color(hex: appState.userProfile.profileColor.hex)
+    }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: Spacing.lg) {
-                // Profile header
-                profileHeader
+        VStack(spacing: 0) {
+            // Colored header
+            profileHeader
 
-                // Settings sections
-                settingsSection
+            // Content
+            ScrollView {
+                VStack(spacing: Spacing.lg) {
+                    // Settings sections
+                    settingsSection
 
-                Spacer(minLength: 40)
+                    Spacer(minLength: 40)
+                }
+                .padding(Spacing.md)
             }
-            .padding(Spacing.md)
-            .padding(.top, 40)
+            .scrollIndicators(.hidden)
+            .background(Theme.background)
         }
-        .scrollIndicators(.hidden)
-        .background(Theme.background)
+        .background(Theme.background.ignoresSafeArea())
         .sheet(isPresented: $showAvatarPicker) {
             AvatarPickerSheet(selectedAvatar: $appState.userProfile.avatarImage)
+        }
+        .sheet(isPresented: $showColorPicker) {
+            ColorPickerSheet(selectedColor: $appState.userProfile.profileColor)
         }
         .alert("Edit Name", isPresented: $isEditingName) {
             TextField("Display Name", text: $editedName)
@@ -48,7 +59,7 @@ struct ProfileView: View {
 
     private var profileHeader: some View {
         VStack(spacing: Spacing.md) {
-            // Avatar
+            // Avatar with edit button
             Button {
                 showAvatarPicker = true
             } label: {
@@ -60,18 +71,18 @@ struct ProfileView: View {
 
                     // Edit badge
                     Circle()
-                        .fill(Theme.accent)
+                        .fill(.white)
                         .frame(width: 32, height: 32)
                         .overlay(
                             Image(systemName: "pencil")
                                 .font(.caption)
-                                .foregroundColor(Theme.background)
+                                .foregroundColor(profileColorValue)
                         )
                         .offset(x: 44, y: 44)
                 }
             }
 
-            // Name
+            // Name with edit button
             Button {
                 editedName = appState.userProfile.displayName
                 isEditingName = true
@@ -79,15 +90,42 @@ struct ProfileView: View {
                 HStack(spacing: Spacing.sm) {
                     Text(appState.userProfile.displayName)
                         .font(Typography.heading2)
-                        .foregroundColor(Theme.textPrimary)
+                        .foregroundColor(.white)
 
                     Image(systemName: "pencil.circle.fill")
                         .font(.title3)
-                        .foregroundColor(Theme.accent)
+                        .foregroundColor(.white.opacity(0.8))
                 }
             }
+
+            // Color picker button
+            Button {
+                showColorPicker = true
+            } label: {
+                HStack(spacing: Spacing.sm) {
+                    Image(systemName: "paintpalette.fill")
+                        .font(.caption)
+                    Text("Change Color")
+                        .font(Typography.caption)
+                }
+                .foregroundColor(.white.opacity(0.8))
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, Spacing.sm)
+                .background(.white.opacity(0.2))
+                .cornerRadius(Radius.full)
+            }
         }
-        .padding(.vertical, Spacing.lg)
+        .padding(.top, 70)
+        .padding(.bottom, Spacing.lg)
+        .frame(maxWidth: .infinity)
+        .background(
+            LinearGradient(
+                colors: [profileColorValue, profileColorValue.opacity(0.8)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea(edges: .top)
+        )
     }
 
     private var settingsSection: some View {
@@ -260,6 +298,66 @@ struct AvatarPickerSheet: View {
             }
             .background(Theme.background)
             .navigationTitle("Choose Avatar")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                    .foregroundColor(Theme.accent)
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+}
+
+struct ColorPickerSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Binding var selectedColor: ProfileColor
+
+    private let columns = Array(repeating: GridItem(.flexible()), count: 3)
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                LazyVGrid(columns: columns, spacing: Spacing.md) {
+                    ForEach(ProfileColor.allCases) { color in
+                        Button {
+                            selectedColor = color
+                            dismiss()
+                        } label: {
+                            VStack(spacing: Spacing.sm) {
+                                Circle()
+                                    .fill(Color(hex: color.hex))
+                                    .frame(width: 60, height: 60)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(
+                                                selectedColor == color ? .white : Color.clear,
+                                                lineWidth: 3
+                                            )
+                                    )
+                                    .shadow(color: Color(hex: color.hex).opacity(0.4), radius: 8, x: 0, y: 4)
+
+                                Text(color.rawValue)
+                                    .font(Typography.caption)
+                                    .foregroundColor(Theme.textPrimary)
+                            }
+                            .padding(Spacing.sm)
+                            .background(
+                                selectedColor == color ?
+                                Theme.surfaceElevated :
+                                Color.clear
+                            )
+                            .cornerRadius(Radius.md)
+                        }
+                    }
+                }
+                .padding(Spacing.lg)
+            }
+            .background(Theme.background)
+            .navigationTitle("Profile Color")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

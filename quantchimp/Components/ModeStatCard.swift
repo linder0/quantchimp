@@ -37,7 +37,7 @@ struct ModeStatCard: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: Spacing.xs) {
-                Text(String(format: "%.0f%%", accuracy))
+                Text(formatAccuracy(accuracy))
                     .font(Typography.heading3)
                     .foregroundColor(mode.color)
 

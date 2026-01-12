@@ -19,16 +19,14 @@ struct SprintResultView: View {
     let onPlayAgain: () -> Void
 
     @State private var hasUpdatedXP = false
-    @State private var showXPAnimation = false
     @State private var showContent = false
 
     private var accuracy: Double {
-        guard totalAttempts > 0 else { return 0 }
-        return Double(correctCount) / Double(totalAttempts) * 100
+        calculateAccuracy(correct: correctCount, total: totalAttempts)
     }
 
     private var xpEarned: Int {
-        min(correctCount * 10, 200)
+        calculateXPEarned(correctCount: correctCount)
     }
 
     private var performanceMessage: String {
@@ -139,7 +137,7 @@ struct SprintResultView: View {
 
             StatCardLarge(
                 icon: "percent",
-                value: String(format: "%.0f%%", accuracy),
+                value: formatAccuracy(accuracy),
                 label: "Accuracy",
                 color: Theme.sprint
             )
@@ -154,43 +152,8 @@ struct SprintResultView: View {
     }
 
     private var xpCard: some View {
-        VStack(spacing: Spacing.smd) {
-            HStack(spacing: Spacing.sm) {
-                Image(systemName: "star.fill")
-                    .font(.title)
-                    .foregroundColor(Theme.xp)
-
-                Text("+\(xpEarned) XP")
-                    .font(Typography.heading2)
-                    .foregroundColor(Theme.textPrimary)
-            }
-            .scaleEffect(showXPAnimation ? 1.1 : 1.0)
-            .animation(Motion.bounce, value: showXPAnimation)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(Spacing.lg)
-        .background(
-            LinearGradient(
-                colors: [Theme.xp.opacity(0.2), Theme.accent.opacity(0.1)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .cornerRadius(Radius.lg)
-        .overlay(
-            RoundedRectangle(cornerRadius: Radius.lg)
-                .stroke(Theme.xp.opacity(0.3), lineWidth: 1)
-        )
-        .onAppear {
-            withAnimation(Motion.ease(Motion.normal).delay(0.5)) {
-                showXPAnimation = true
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                withAnimation {
-                    showXPAnimation = false
-                }
-            }
-        }
+        XPEarnedBadge(xpEarned: xpEarned, style: .large)
+            .frame(maxWidth: .infinity)
     }
 
     private var actionButtons: some View {

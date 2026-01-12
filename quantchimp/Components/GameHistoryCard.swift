@@ -54,7 +54,7 @@ struct GameHistoryCard: View {
                         .foregroundColor(Theme.textSecondary)
 
                     // Accuracy
-                    Text(String(format: "%.0f%%", session.accuracy))
+                    Text(formatAccuracy(session.accuracy))
                         .font(Typography.label)
                         .foregroundColor(accuracyColor)
                 }

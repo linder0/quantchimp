@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct FriendsView: View {
+    @EnvironmentObject var appState: AppState
     @State private var showShareSheet = false
 
     private let inviteMessage = """
@@ -19,132 +20,185 @@ struct FriendsView: View {
     """
 
     var body: some View {
-        ScrollableViewWithHeader(title: "Friends", headerColor: Theme.surfaceElevated) {
-            VStack(spacing: Spacing.xl) {
-                // Empty state illustration
-                emptyStateView
+        VStack(spacing: 0) {
+            // Colored header with monkey, text, and invite button
+            friendsHeader
 
-                // Invite button
-                inviteButton
+            // Content area
+            ScrollView {
+                VStack(spacing: Spacing.lg) {
+                    if appState.hasFriends {
+                        friendsList
+                    } else {
+                        emptyStateHint
+                    }
 
-                // Coming soon section
-                comingSoonSection
-
-                Spacer(minLength: 40)
+                    Spacer(minLength: 40)
+                }
+                .padding(Spacing.md)
             }
-            .padding(Spacing.md)
+            .scrollIndicators(.hidden)
+            .background(Theme.background)
         }
+        .background(Theme.background.ignoresSafeArea())
         .sheet(isPresented: $showShareSheet) {
             ShareSheet(activityItems: [inviteMessage])
         }
     }
 
-    private var emptyStateView: some View {
-        VStack(spacing: Spacing.lg) {
+    // MARK: - Colored Header
+    private var friendsHeader: some View {
+        HStack(alignment: .bottom, spacing: 0) {
+            // Monkey on left - bigger to fill space
             Image("monkey_no_friends")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 140, height: 140)
+                .frame(width: 200, height: 200)
+                .offset(x: -Spacing.sm, y: -Spacing.sm)
 
-            Text("No friends yet")
-                .font(Typography.heading2)
-                .foregroundColor(Theme.textPrimary)
+            // Text and button on right
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                Text(appState.hasFriends ? "Friends" : "No friends yet")
+                    .font(Typography.heading1)
+                    .foregroundColor(.white)
 
-            Text("Invite your friends to compete and compare stats!")
-                .font(Typography.body)
-                .foregroundColor(Theme.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, Spacing.xl)
+                if !appState.hasFriends {
+                    Text("Invite friends to compete!")
+                        .font(Typography.caption)
+                        .foregroundColor(.white.opacity(0.8))
+                } else {
+                    Text("\(appState.friends.count) friend\(appState.friends.count == 1 ? "" : "s")")
+                        .font(Typography.caption)
+                        .foregroundColor(.white.opacity(0.8))
+                }
+
+                // Invite button under text
+                inviteButton
+            }
+            .padding(.bottom, Spacing.lg)
+
+            Spacer()
         }
-        .padding(.top, Spacing.xl)
+        .padding(.top, 56)
+        .padding(.trailing, Spacing.md)
+        .frame(maxWidth: .infinity)
+        .background(
+            LinearGradient(
+                colors: [Theme.accentSecondary, Theme.accentSecondary.opacity(0.8)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea(edges: .top)
+        )
+        .clipped()
     }
 
+    // MARK: - Empty State Hint
+    private var emptyStateHint: some View {
+        VStack(spacing: Spacing.md) {
+            Image("tab_friends")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 48, height: 48)
+                .opacity(0.4)
+
+            Text("Your friends will appear here")
+                .font(Typography.bodyBold)
+                .foregroundColor(Theme.textSecondary)
+
+            Text("Once friends join via your invite link, you'll be able to see their stats and compete on leaderboards.")
+                .font(Typography.caption)
+                .foregroundColor(Theme.textTertiary)
+                .multilineTextAlignment(.center)
+        }
+        .padding(Spacing.xl)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    // MARK: - Friends List
+    private var friendsList: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("LEADERBOARD")
+                .font(Typography.headline)
+                .foregroundColor(Theme.textPrimary)
+
+            VStack(spacing: Spacing.sm) {
+                ForEach(appState.friends.sorted { $0.xp > $1.xp }) { friend in
+                    FriendRow(friend: friend)
+                }
+            }
+        }
+    }
+
+    // MARK: - Invite Button
     private var inviteButton: some View {
         Button {
             showShareSheet = true
         } label: {
-            HStack(spacing: Spacing.smd) {
+            HStack(spacing: Spacing.sm) {
                 Image(systemName: "square.and.arrow.up")
-                    .font(Typography.headline)
+                    .font(Typography.label)
 
                 Text("Invite Friends")
-                    .font(Typography.headline)
+                    .font(Typography.label)
             }
-            .foregroundColor(Theme.background)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, Spacing.md)
-            .background(Theme.accentGradient)
+            .foregroundColor(Theme.accentSecondary)
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, Spacing.sm)
+            .background(.white)
             .cornerRadius(Radius.md)
-            .shadow(color: Theme.accent.opacity(0.3), radius: 10, x: 0, y: 4)
-        }
-    }
-
-    private var comingSoonSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            Text("COMING SOON")
-                .font(Typography.headline)
-                .foregroundColor(Theme.textPrimary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            VStack(spacing: Spacing.smd) {
-                ComingSoonRow(
-                    icon: "chart.line.uptrend.xyaxis",
-                    title: "Leaderboards",
-                    description: "Compete with friends for the top spot"
-                )
-
-                ComingSoonRow(
-                    icon: "bolt.fill",
-                    title: "Challenges",
-                    description: "Send daily challenges to friends"
-                )
-
-                ComingSoonRow(
-                    icon: "trophy.fill",
-                    title: "Achievements",
-                    description: "Unlock and share achievements"
-                )
-            }
         }
     }
 }
 
-struct ComingSoonRow: View {
-    let icon: String
-    let title: String
-    let description: String
+// MARK: - Friend Row
+struct FriendRow: View {
+    let friend: Friend
 
     var body: some View {
         HStack(spacing: Spacing.md) {
-            ZStack {
-                Circle()
-                    .fill(Theme.textTertiary.opacity(0.15))
-                    .frame(width: 44, height: 44)
+            // Avatar
+            Image(friend.avatarImage)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 44, height: 44)
+                .clipShape(Circle())
 
-                Image(systemName: icon)
-                    .font(Typography.headline)
-                    .foregroundColor(Theme.textTertiary)
-            }
-
+            // Name and level
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text(title)
+                Text(friend.displayName)
                     .font(Typography.bodyBold)
                     .foregroundColor(Theme.textPrimary)
 
-                Text(description)
+                Text("Level \(friend.level)")
                     .font(Typography.caption)
                     .foregroundColor(Theme.textSecondary)
             }
 
             Spacer()
 
-            Text("Soon")
-                .font(Typography.caption)
-                .foregroundColor(Theme.textTertiary)
-                .padding(.horizontal, Spacing.sm)
-                .padding(.vertical, Spacing.xs)
-                .background(Theme.surfaceElevated)
-                .cornerRadius(Radius.sm)
+            // XP and streak
+            VStack(alignment: .trailing, spacing: Spacing.xs) {
+                HStack(spacing: Spacing.xs) {
+                    Image(systemName: "star.fill")
+                        .font(.caption)
+                        .foregroundColor(Theme.xp)
+                    Text("\(friend.xp)")
+                        .font(Typography.label)
+                        .foregroundColor(Theme.textPrimary)
+                }
+
+                if friend.streak > 0 {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "flame.fill")
+                            .font(.caption)
+                            .foregroundColor(Theme.streak)
+                        Text("\(friend.streak)")
+                            .font(Typography.caption)
+                            .foregroundColor(Theme.textSecondary)
+                    }
+                }
+            }
         }
         .padding(Spacing.md)
         .cardStyle()
@@ -162,8 +216,18 @@ struct ShareSheet: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
-#Preview {
-    NavigationStack {
-        FriendsView()
-    }
+#Preview("Empty State") {
+    FriendsView()
+        .environmentObject(AppState())
+}
+
+#Preview("With Friends") {
+    let appState = AppState()
+    appState.friends = [
+        Friend(displayName: "Alice", avatarImage: "avatar_cool", streak: 5, xp: 450),
+        Friend(displayName: "Bob", avatarImage: "avatar_ninja", streak: 12, xp: 890),
+        Friend(displayName: "Charlie", avatarImage: "avatar_wizard", streak: 0, xp: 120)
+    ]
+    return FriendsView()
+        .environmentObject(appState)
 }
