@@ -16,11 +16,6 @@ struct quantchimpApp: App {
     init() {
         // Configure appearance for dark theme
         configureAppearance()
-
-        // Load InjectionIII for hot-reload (Debug only)
-        #if DEBUG
-        Bundle(path: "/Applications/InjectionIII.app/Contents/Resources/iOSInjection.bundle")?.load()
-        #endif
     }
 
     var body: some Scene {
@@ -41,14 +36,14 @@ struct quantchimpApp: App {
 
                 if isLoading {
                     SplashView()
-                        .transition(.opacity.combined(with: .scale(scale: 1.1)))
+                        .transition(.opacity.animation(.easeOut(duration: 0.6)))
                 }
             }
             .preferredColorScheme(.dark) // Force dark mode for premium feel
             .onAppear {
                 // Give the app time to fully mount
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
-                    withAnimation(.easeInOut(duration: 0.5)) {
+                    withAnimation(.easeOut(duration: 0.8)) {
                         isLoading = false
                     }
                 }

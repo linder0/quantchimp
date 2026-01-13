@@ -24,20 +24,18 @@ struct ProfileView: View {
             // Colored header
             profileHeader
 
-            // Content
-            ScrollView {
-                VStack(spacing: Spacing.lg) {
-                    // Settings sections
-                    settingsSection
+            // Content (no scroll - fits on screen)
+            VStack(spacing: Spacing.lg) {
+                // Settings sections
+                settingsSection
 
-                    Spacer(minLength: 40)
-                }
-                .padding(Spacing.md)
+                Spacer()
             }
-            .scrollIndicators(.hidden)
+            .padding(Spacing.md)
+            .frame(maxHeight: .infinity)
             .background(Theme.background)
         }
-        .background(Theme.background.ignoresSafeArea())
+        .background(Theme.background.ignoresSafeArea(edges: .top))
         .sheet(isPresented: $showAvatarPicker) {
             AvatarPickerSheet(selectedAvatar: $appState.userProfile.avatarImage)
         }
@@ -130,9 +128,7 @@ struct ProfileView: View {
 
     private var settingsSection: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
-            Text("SETTINGS")
-                .font(Typography.headline)
-                .foregroundColor(Theme.textPrimary)
+            SectionHeader(title: "Settings")
 
             VStack(spacing: 0) {
                 SettingsToggleRow(
@@ -165,9 +161,7 @@ struct ProfileView: View {
 
             // About section
             VStack(alignment: .leading, spacing: Spacing.md) {
-                Text("ABOUT")
-                    .font(Typography.headline)
-                    .foregroundColor(Theme.textPrimary)
+                SectionHeader(title: "About")
                     .padding(.top, Spacing.sm)
 
                 VStack(spacing: 0) {

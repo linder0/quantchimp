@@ -12,6 +12,8 @@ struct DailyProblem: Identifiable {
     let prompt: String
     let answer: String
     let explanation: String
+    let hint: String?
+    let imageName: String?  // Custom illustration for the puzzle
     let difficulty: Int  // 1-10 scale
 
     // Legacy support for multiple choice (deprecated)
@@ -19,11 +21,13 @@ struct DailyProblem: Identifiable {
     let correctIndex: Int?
 
     /// Creates an open-ended question (new format)
-    init(id: Int, prompt: String, answer: String, explanation: String, difficulty: Int) {
+    init(id: Int, prompt: String, answer: String, explanation: String, difficulty: Int, hint: String? = nil, imageName: String? = nil) {
         self.id = id
         self.prompt = prompt
         self.answer = answer
         self.explanation = explanation
+        self.hint = hint
+        self.imageName = imageName
         self.difficulty = difficulty
         self.choices = nil
         self.correctIndex = nil
@@ -36,6 +40,8 @@ struct DailyProblem: Identifiable {
         self.choices = choices
         self.correctIndex = correctIndex
         self.explanation = explanation
+        self.hint = nil
+        self.imageName = nil
         self.answer = choices[correctIndex]
         self.difficulty = 5  // Default difficulty
     }

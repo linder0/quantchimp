@@ -20,6 +20,15 @@ enum Difficulty: String, CaseIterable {
         }
     }
 
+    /// Monkey mascot image name for each difficulty
+    var imageName: String {
+        switch self {
+        case .easy: return "monkey_practice"
+        case .medium: return "monkey_good"
+        case .hard: return "monkey_great"
+        }
+    }
+
     // MARK: - Addition/Subtraction Ranges
 
     var addSubRange: ClosedRange<Int> {
@@ -72,3 +81,4 @@ enum Difficulty: String, CaseIterable {
         self == .medium
     }
 }
+

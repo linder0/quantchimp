@@ -14,8 +14,10 @@ struct ArithmeticSprintFlowView: View {
 
     @State private var phase: SprintPhase = .setup
     @State private var selectedDifficulty: Difficulty = .medium
-    @State private var selectedDuration: Duration = .blitz
     @State private var selectedOperations: Set<ArithmeticQuestion.Operation> = Set(ArithmeticQuestion.Operation.allCases)
+
+    // Fixed duration: all sprints are 60 seconds
+    private let sprintDuration: Duration = .bullet
 
     // Results data
     @State private var correctCount = 0
@@ -40,7 +42,7 @@ struct ArithmeticSprintFlowView: View {
             case .playing:
                 SprintGameView(
                     difficulty: selectedDifficulty,
-                    duration: selectedDuration,
+                    duration: sprintDuration,
                     operations: selectedOperations,
                     onComplete: { correct, total in
                         correctCount = correct
@@ -60,7 +62,7 @@ struct ArithmeticSprintFlowView: View {
                     correctCount: correctCount,
                     totalAttempts: totalAttempts,
                     difficulty: selectedDifficulty,
-                    duration: selectedDuration,
+                    duration: sprintDuration,
                     onDismiss: {
                         dismiss()
                     },
@@ -81,31 +83,19 @@ struct ArithmeticSprintFlowView: View {
     // MARK: - Setup Phase
 
     private var setupPhase: some View {
-        VStack(spacing: Spacing.smd) {
+        VStack(spacing: 0) {
             // Header with close button
             HStack {
-                Button {
+                IconButton(icon: "xmark", backgroundColor: Theme.surfaceElevated, size: 36) {
                     dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(Theme.textSecondary)
-                        .frame(width: 36, height: 36)
-                        .background(Theme.surfaceElevated)
-                        .clipShape(Circle())
                 }
 
                 Spacer()
 
-                // Header icon and title
-                HStack(spacing: Spacing.sm) {
-                    Image(systemName: "bolt.fill")
-                        .font(.system(size: 18))
-                        .foregroundColor(Theme.sprint)
-                    Text("Arithmetic Sprint")
-                        .font(Typography.headline)
-                        .foregroundColor(Theme.textPrimary)
-                }
+                // Header title
+                Text("Arithmetic Sprint")
+                    .font(Typography.headline)
+                    .foregroundColor(Theme.textPrimary)
 
                 Spacer()
 
@@ -113,182 +103,297 @@ struct ArithmeticSprintFlowView: View {
             }
             .padding(.horizontal, Spacing.md)
             .padding(.top, Spacing.md)
+            .padding(.bottom, Spacing.sm)
 
-            // Difficulty selector
-            difficultySection
-                .padding(.horizontal, Spacing.md)
+            // Difficulty carousel - takes flexible space
+            DifficultyCarousel(selectedDifficulty: $selectedDifficulty, selectedOperations: selectedOperations)
 
-            // Difficulty info card
-            difficultyInfoCard
-                .padding(.horizontal, Spacing.md)
+            // Bottom controls - fixed height section
+            VStack(spacing: Spacing.smd) {
+                // Operations row (1x4)
+                operationsRow
 
-            // Duration selector
-            durationSection
-                .padding(.horizontal, Spacing.md)
-
-            // Operations selector
-            operationsSection
-                .padding(.horizontal, Spacing.md)
-
-            Spacer()
-
-            // Start button
-            PrimaryButton(
-                title: "Start Sprint",
-                color: Theme.sprint,
-                isEnabled: !selectedOperations.isEmpty
-            ) {
-                withAnimation(Motion.spring) {
-                    phase = .playing
-                }
+                // Start button - stylized
+                startSprintButton
             }
             .padding(.horizontal, Spacing.md)
+            .padding(.top, Spacing.smd)
             .padding(.bottom, Spacing.lg)
         }
     }
 
-    // MARK: - Difficulty Section
+    // MARK: - Start Sprint Button
 
-    private var difficultySection: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text("Difficulty")
-                .font(Typography.label)
-                .foregroundColor(Theme.textSecondary)
-
-            HStack(spacing: Spacing.sm) {
-                ForEach(Difficulty.allCases, id: \.self) { difficulty in
-                    Button {
-                        Haptic.selection()
-                        Sound.select()
-                        withAnimation(Motion.snappy) {
-                            selectedDifficulty = difficulty
-                        }
-                    } label: {
-                        Text(difficulty.rawValue)
-                            .font(Typography.label)
-                            .foregroundColor(selectedDifficulty == difficulty ? Theme.background : difficulty.color)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 44)
-                            .background(
-                                RoundedRectangle(cornerRadius: Radius.md)
-                                    .fill(selectedDifficulty == difficulty ? difficulty.color : Theme.surface)
-                            )
-                    }
-                    .buttonStyle(.plain)
-                }
+    private var startSprintButton: some View {
+        Button {
+            Haptic.medium()
+            Sound.tap()
+            withAnimation(Motion.spring) {
+                phase = .playing
             }
-        }
-    }
-
-    // MARK: - Difficulty Info Card
-
-    private var difficultyInfoCard: some View {
-        VStack(alignment: .leading, spacing: Spacing.xs) {
-            infoRow(label: "Addition", value: selectedDifficulty.additionDescription)
-            infoRow(label: "Subtraction", value: selectedDifficulty.subtractionDescription)
-            infoRow(label: "Multiplication", value: selectedDifficulty.multiplicationDescription)
-            infoRow(label: "Division", value: selectedDifficulty.divisionDescription)
-        }
-        .padding(Spacing.smd)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: Radius.md)
-                .fill(Theme.surface)
-        )
-    }
-
-    private func infoRow(label: String, value: String) -> some View {
-        HStack {
-            Text(label)
-                .font(Typography.caption)
-                .foregroundColor(Theme.textPrimary)
-
-            Spacer()
-
-            Text(value)
-                .font(Typography.caption)
-                .foregroundColor(Theme.textSecondary)
-        }
-    }
-
-    // MARK: - Duration Section
-
-    private var durationSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text("Duration")
-                .font(Typography.label)
-                .foregroundColor(Theme.textSecondary)
-
+        } label: {
             HStack(spacing: Spacing.sm) {
-                ForEach(Duration.allCases, id: \.self) { duration in
-                    Button {
-                        Haptic.selection()
-                        Sound.select()
-                        withAnimation(Motion.snappy) {
-                            selectedDuration = duration
-                        }
-                    } label: {
-                        VStack(spacing: 4) {
-                            Image(systemName: duration.icon)
-                                .font(.system(size: 18))
+                Image(systemName: "play.fill")
+                    .font(.system(size: 18, weight: .bold))
 
-                            Text(duration.displayTime)
-                                .font(Typography.caption)
-                        }
-                        .foregroundColor(selectedDuration == duration ? .white : Theme.textPrimary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 60)
-                        .background(
-                            RoundedRectangle(cornerRadius: Radius.md)
-                                .fill(selectedDuration == duration ? Theme.sprint : Theme.surface)
+                Text("Start Sprint")
+                    .font(Typography.headline)
+            }
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, Spacing.md + 2)
+            .background(
+                ZStack {
+                    // Gradient background
+                    RoundedRectangle(cornerRadius: Radius.lg)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Theme.sprint,
+                                    Theme.sprint.opacity(0.8),
+                                    Color(red: 0.2, green: 0.5, blue: 0.9)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                         )
-                    }
-                    .buttonStyle(.plain)
+
+                    // Inner highlight
+                    RoundedRectangle(cornerRadius: Radius.lg)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.4),
+                                    Color.white.opacity(0.1),
+                                    Color.clear
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.5
+                        )
                 }
+            )
+            .shadow(color: Theme.sprint.opacity(0.5), radius: 16, x: 0, y: 8)
+            .shadow(color: Theme.sprint.opacity(0.3), radius: 4, x: 0, y: 2)
+        }
+        .disabled(selectedOperations.isEmpty)
+        .opacity(selectedOperations.isEmpty ? 0.5 : 1.0)
+        .pressable(scale: 0.97)
+    }
+
+    // MARK: - Operations Row (1x4)
+
+    private var operationsRow: some View {
+        HStack(spacing: Spacing.sm) {
+            ForEach(ArithmeticQuestion.Operation.allCases, id: \.self) { operation in
+                operationToggle(operation)
             }
         }
     }
 
-    // MARK: - Operations Section
+    private func operationToggle(_ operation: ArithmeticQuestion.Operation) -> some View {
+        let isSelected = selectedOperations.contains(operation)
 
-    private var operationsSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text("Operations")
-                .font(Typography.label)
-                .foregroundColor(Theme.textSecondary)
-
-            HStack(spacing: Spacing.sm) {
-                ForEach(ArithmeticQuestion.Operation.allCases, id: \.self) { operation in
-                    Button {
-                        Haptic.selection()
-                        Sound.select()
-                        withAnimation(Motion.snappy) {
-                            toggleOperation(operation)
-                        }
-                    } label: {
-                        Text(operation.rawValue)
-                            .font(.system(size: 28, weight: .medium))
-                            .foregroundColor(selectedOperations.contains(operation) ? .white : Theme.textTertiary)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(
-                                RoundedRectangle(cornerRadius: Radius.md)
-                                    .fill(selectedOperations.contains(operation) ? Theme.sprint : Theme.surface)
-                            )
-                    }
-                    .buttonStyle(.plain)
-                }
+        return Button {
+            Haptic.selection()
+            Sound.select()
+            withAnimation(Motion.snappy) {
+                toggleOperation(operation)
             }
+        } label: {
+            Image(operation.imageName)
+                .resizable()
+                .scaledToFit()
+                .frame(height: 44)
+                .frame(maxWidth: .infinity)
+                .frame(height: 64)
+                .background(
+                    RoundedRectangle(cornerRadius: Radius.md)
+                        .fill(Theme.surface)
+                )
+                .opacity(isSelected ? 1.0 : 0.35)
         }
+        .buttonStyle(.plain)
     }
 
     private func toggleOperation(_ operation: ArithmeticQuestion.Operation) {
         if selectedOperations.contains(operation) {
+            // Only remove if there's at least one other operation selected
             if selectedOperations.count > 1 {
                 selectedOperations.remove(operation)
             }
         } else {
             selectedOperations.insert(operation)
+        }
+    }
+}
+
+// MARK: - Difficulty Carousel
+
+struct DifficultyCarousel: View {
+    @Binding var selectedDifficulty: Difficulty
+    let selectedOperations: Set<ArithmeticQuestion.Operation>
+
+    private var currentIndex: Int {
+        Difficulty.allCases.firstIndex(of: selectedDifficulty) ?? 1
+    }
+
+    private var canGoBack: Bool {
+        currentIndex > 0
+    }
+
+    private var canGoForward: Bool {
+        currentIndex < Difficulty.allCases.count - 1
+    }
+
+    var body: some View {
+        VStack(spacing: Spacing.smd) {
+            // Swipeable card carousel
+            TabView(selection: $selectedDifficulty) {
+                ForEach(Difficulty.allCases, id: \.self) { difficulty in
+                    DifficultyCard(difficulty: difficulty, selectedOperations: selectedOperations)
+                        .tag(difficulty)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .onChange(of: selectedDifficulty) { _, _ in
+                Haptic.selection()
+                Sound.select()
+            }
+
+            // Navigation row with arrows and dots - BELOW the card
+            HStack(spacing: Spacing.lg) {
+                // Left arrow
+                Button {
+                    if canGoBack {
+                        Haptic.selection()
+                        Sound.select()
+                        withAnimation(Motion.snappy) {
+                            selectedDifficulty = Difficulty.allCases[currentIndex - 1]
+                        }
+                    }
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(canGoBack ? Theme.textPrimary : Theme.textTertiary.opacity(0.3))
+                        .frame(width: 36, height: 36)
+                        .background(Theme.surfaceElevated)
+                        .clipShape(Circle())
+                }
+                .disabled(!canGoBack)
+
+                // Page dots
+                HStack(spacing: Spacing.sm) {
+                    ForEach(Difficulty.allCases, id: \.self) { difficulty in
+                        Circle()
+                            .fill(selectedDifficulty == difficulty ? difficulty.color : Theme.textTertiary.opacity(0.4))
+                            .frame(width: selectedDifficulty == difficulty ? 10 : 8, height: selectedDifficulty == difficulty ? 10 : 8)
+                            .animation(Motion.snappy, value: selectedDifficulty)
+                            .onTapGesture {
+                                Haptic.selection()
+                                Sound.select()
+                                withAnimation(Motion.snappy) {
+                                    selectedDifficulty = difficulty
+                                }
+                            }
+                    }
+                }
+
+                // Right arrow
+                Button {
+                    if canGoForward {
+                        Haptic.selection()
+                        Sound.select()
+                        withAnimation(Motion.snappy) {
+                            selectedDifficulty = Difficulty.allCases[currentIndex + 1]
+                        }
+                    }
+                } label: {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(canGoForward ? Theme.textPrimary : Theme.textTertiary.opacity(0.3))
+                        .frame(width: 36, height: 36)
+                        .background(Theme.surfaceElevated)
+                        .clipShape(Circle())
+                }
+                .disabled(!canGoForward)
+            }
+        }
+    }
+}
+
+// MARK: - Difficulty Card
+
+struct DifficultyCard: View {
+    let difficulty: Difficulty
+    let selectedOperations: Set<ArithmeticQuestion.Operation>
+
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            // Monkey mascot image - always anchored at bottom, fixed position
+            Image(difficulty.imageName)
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, Spacing.lg)
+                .padding(.bottom, Spacing.md)
+
+            // Content overlay
+            VStack(spacing: 0) {
+                // Title with difficulty color - ON TOP
+                Text(difficulty.rawValue.uppercased())
+                    .font(Typography.displaySmall)
+                    .foregroundColor(difficulty.color)
+                    .padding(.top, Spacing.lg)
+
+                // Number range info - dynamic based on selected operations
+                VStack(spacing: Spacing.xs) {
+                    // Show Addition row if addition is selected
+                    if selectedOperations.contains(.add) {
+                        difficultyInfoRow(label: "Addition", value: difficulty.additionDescription)
+                    }
+
+                    // Show Subtraction row if subtraction is selected
+                    if selectedOperations.contains(.subtract) {
+                        difficultyInfoRow(label: "Subtraction", value: difficulty.subtractionDescription)
+                    }
+
+                    // Show Multiply row if multiplication is selected
+                    if selectedOperations.contains(.multiply) {
+                        difficultyInfoRow(label: "Multiplication", value: difficulty.multiplicationDescription)
+                    }
+
+                    // Show Divide row if division is selected
+                    if selectedOperations.contains(.divide) {
+                        difficultyInfoRow(label: "Division", value: difficulty.divisionDescription)
+                    }
+                }
+                .padding(.horizontal, Spacing.lg)
+                .padding(.top, Spacing.md)
+
+                Spacer()
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: Radius.xlg)
+                .fill(Theme.surface)
+        )
+        .padding(.horizontal, Spacing.md)
+    }
+
+    private func difficultyInfoRow(label: String, value: String) -> some View {
+        HStack {
+            Text(label)
+                .font(Typography.caption)
+                .foregroundColor(Theme.textSecondary)
+
+            Spacer()
+
+            Text(value)
+                .font(Typography.label)
+                .foregroundColor(Theme.textPrimary)
         }
     }
 }
@@ -339,15 +444,8 @@ struct SprintGameView: View {
         VStack(spacing: 0) {
             // Top bar
             HStack {
-                Button {
+                IconButton(icon: "xmark", backgroundColor: Theme.surfaceElevated, size: 40) {
                     showExitConfirmation = true
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(Theme.textSecondary)
-                        .frame(width: 40, height: 40)
-                        .background(Theme.surfaceElevated)
-                        .clipShape(Circle())
                 }
 
                 Spacer()
@@ -438,8 +536,9 @@ struct SprintGameView: View {
     }
 
     private var timerView: some View {
-        HStack(spacing: Spacing.sm) {
+        HStack(spacing: Spacing.xs) {
             Image(systemName: "timer")
+                .font(.system(size: 20))
                 .foregroundColor(timeRemaining <= 10 ? Theme.error : Theme.sprint)
 
             Text("\(timeRemaining)s")
@@ -447,15 +546,12 @@ struct SprintGameView: View {
                 .foregroundColor(timeRemaining <= 10 ? Theme.error : Theme.textPrimary)
                 .monospacedDigit()
         }
-        .padding(.horizontal, Spacing.md)
-        .padding(.vertical, Spacing.sm)
-        .background(timeRemaining <= 10 ? Theme.error.opacity(0.15) : Theme.sprint.opacity(0.15))
-        .cornerRadius(Radius.md)
     }
 
     private var scoreView: some View {
-        HStack(spacing: Spacing.sm) {
+        HStack(spacing: Spacing.xs) {
             Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 20))
                 .foregroundColor(Theme.success)
 
             Text("\(correctCount)")
@@ -463,10 +559,6 @@ struct SprintGameView: View {
                 .foregroundColor(Theme.textPrimary)
                 .monospacedDigit()
         }
-        .padding(.horizontal, Spacing.md)
-        .padding(.vertical, Spacing.sm)
-        .background(Theme.success.opacity(0.15))
-        .cornerRadius(Radius.md)
     }
 
     private func startTimer() {

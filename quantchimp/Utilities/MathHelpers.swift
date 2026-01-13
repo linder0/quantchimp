@@ -30,3 +30,4 @@ func formatAccuracy(_ accuracy: Double) -> String {
 func calculateXPEarned(correctCount: Int) -> Int {
     min(correctCount * 10, 200)
 }
+

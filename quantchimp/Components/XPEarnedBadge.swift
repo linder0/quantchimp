@@ -72,3 +72,4 @@ struct XPEarnedBadge: View {
     .padding(Spacing.lg)
     .background(Theme.background)
 }
+

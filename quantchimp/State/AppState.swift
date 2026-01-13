@@ -57,7 +57,7 @@ class AppState: ObservableObject {
     // MARK: - Computed Properties
     var completedDailyToday: Bool {
         guard let lastDate = lastDailyCompletedDate else { return false }
-        return isSameDay(lastDate, Date())
+        return DateHelpers.isSameDay(lastDate, Date())
     }
 
     var currentLevel: Int {
@@ -108,7 +108,7 @@ class AppState: ObservableObject {
     func updateStreakAndXPForDaily() {
         guard !completedDailyToday else { return }
 
-        if let last = lastDailyCompletedDate, isYesterday(last) {
+        if let last = lastDailyCompletedDate, DateHelpers.isYesterday(last) {
             streak += 1
         } else {
             streak = 1
@@ -121,15 +121,6 @@ class AppState: ObservableObject {
 
     func addArithmeticXP(correctCount: Int) {
         xp += calculateXPEarned(correctCount: correctCount)
-    }
-
-    // MARK: - Date Helpers
-    private func isSameDay(_ date1: Date, _ date2: Date) -> Bool {
-        Calendar.current.isDate(date1, inSameDayAs: date2)
-    }
-
-    private func isYesterday(_ date: Date) -> Bool {
-        Calendar.current.isDateInYesterday(date)
     }
 
     // MARK: - Onboarding

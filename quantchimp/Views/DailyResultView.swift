@@ -2,7 +2,7 @@
 //  DailyResultView.swift
 //  quantchimp
 //
-//  Daily result view for open-ended quant questions
+//  Daily result view - immersive full-screen experience
 //
 
 import SwiftUI
@@ -10,10 +10,11 @@ import SwiftUI
 struct DailyResultView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var statsManager: StatsManager
+    @Environment(\.dismiss) private var dismiss
+
     let problem: DailyProblem
     let isCorrect: Bool
     let userAnswer: String
-    @Binding var navigationPath: NavigationPath
 
     @State private var hasUpdatedStats = false
 
@@ -22,37 +23,59 @@ struct DailyResultView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: Spacing.lg) {
-                // Result header
-                resultHeader
+        ZStack {
+            Theme.background
+                .ignoresSafeArea()
 
-                // XP earned
-                if xpEarned > 0 {
-                    xpBadge
+            VStack(spacing: 0) {
+                // Header
+                HStack {
+                    Spacer()
+
+                    Text("Result")
+                        .font(Typography.headline)
+                        .foregroundColor(Theme.textPrimary)
+
+                    Spacer()
+                }
+                .padding(.horizontal, Spacing.md)
+                .padding(.top, Spacing.lg)
+
+                Spacer()
+
+                // Result content
+                VStack(spacing: Spacing.lg) {
+                    // Result header
+                    resultHeader
+
+                    // XP earned
+                    if xpEarned > 0 {
+                        xpBadge
+                    }
+
+                    // Your answer vs correct answer
+                    answersComparison
+                        .padding(.horizontal, Spacing.md)
+
+                    // Explanation card
+                    explanationCard
+                        .padding(.horizontal, Spacing.md)
                 }
 
-                // Your answer vs correct answer
-                answersComparison
-
-                // Explanation card
-                explanationCard
-
-                Spacer(minLength: 40)
+                Spacer()
 
                 // Done button
                 PrimaryButton(title: "Done", color: isCorrect ? Theme.success : Theme.accent) {
-                    navigationPath = NavigationPath()
+                    // Dismiss both the result view and the puzzle view
+                    dismiss()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        dismiss()
+                    }
                 }
+                .padding(.horizontal, Spacing.md)
                 .padding(.bottom, Spacing.lg)
             }
-            .padding(Spacing.md)
         }
-        .scrollIndicators(.hidden)
-        .background(Theme.background)
-        .navigationTitle("Result")
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
         .onAppear {
             updateStatsIfNeeded()
         }
@@ -60,18 +83,14 @@ struct DailyResultView: View {
 
     private var resultHeader: some View {
         VStack(spacing: Spacing.md) {
-            ZStack {
-                Circle()
-                    .fill(isCorrect ? Theme.success.opacity(0.15) : Theme.error.opacity(0.15))
-                    .frame(width: 100, height: 100)
-
-                Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                    .font(.system(size: 50))
-                    .foregroundColor(isCorrect ? Theme.success : Theme.error)
-            }
+            // Monkey based on result
+            Image(isCorrect ? "monkey_excellent" : "monkey_practice")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 120)
 
             Text(isCorrect ? "Correct!" : "Incorrect")
-                .font(Typography.heading1)
+                .font(Typography.displaySmall)
                 .foregroundColor(isCorrect ? Theme.success : Theme.error)
 
             if isCorrect && appState.streak > 0 {
@@ -84,7 +103,6 @@ struct DailyResultView: View {
                 }
             }
         }
-        .padding(.top, Spacing.lg)
     }
 
     private var xpBadge: some View {
@@ -112,8 +130,10 @@ struct DailyResultView: View {
                     .foregroundColor(isCorrect ? Theme.success : Theme.error)
             }
             .padding(Spacing.md)
-            .background(isCorrect ? Theme.success.opacity(0.1) : Theme.error.opacity(0.1))
-            .cornerRadius(Radius.lg)
+            .background(
+                RoundedRectangle(cornerRadius: Radius.lg)
+                    .fill(isCorrect ? Theme.success.opacity(0.1) : Theme.error.opacity(0.1))
+            )
 
             // Correct answer (show if incorrect)
             if !isCorrect {
@@ -135,8 +155,10 @@ struct DailyResultView: View {
                         .foregroundColor(Theme.success)
                 }
                 .padding(Spacing.md)
-                .background(Theme.success.opacity(0.1))
-                .cornerRadius(Radius.lg)
+                .background(
+                    RoundedRectangle(cornerRadius: Radius.lg)
+                        .fill(Theme.success.opacity(0.1))
+                )
             }
         }
     }
@@ -158,7 +180,10 @@ struct DailyResultView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Spacing.lg)
-        .cardStyle()
+        .background(
+            RoundedRectangle(cornerRadius: Radius.xlg)
+                .fill(Theme.surface)
+        )
     }
 
     private func updateStatsIfNeeded() {
@@ -182,14 +207,11 @@ struct DailyResultView: View {
 }
 
 #Preview {
-    NavigationStack {
-        DailyResultView(
-            problem: DailyPuzzleBank.puzzles[0],
-            isCorrect: true,
-            userAnswer: "21/32",
-            navigationPath: .constant(NavigationPath())
-        )
-        .environmentObject(AppState())
-        .environmentObject(StatsManager())
-    }
+    DailyResultView(
+        problem: DailyPuzzleBank.puzzles[0],
+        isCorrect: true,
+        userAnswer: "21/32"
+    )
+    .environmentObject(AppState())
+    .environmentObject(StatsManager())
 }

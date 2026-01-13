@@ -61,3 +61,4 @@ enum Haptic {
         UISelectionFeedbackGenerator().selectionChanged()
     }
 }
+

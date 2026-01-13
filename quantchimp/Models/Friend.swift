@@ -35,3 +35,4 @@ struct Friend: Codable, Identifiable, Equatable {
         xp / 200 + 1
     }
 }
+

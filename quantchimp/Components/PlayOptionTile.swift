@@ -17,77 +17,68 @@ struct PlayOptionCard: View {
     var imageSize: CGFloat = 140
     let action: () -> Void
 
-    @State private var isPressed = false
     private let pressDepth: CGFloat = 4
 
     var body: some View {
-        ZStack(alignment: .top) {
-            // Shadow card underneath (golden tint)
-            RoundedRectangle(cornerRadius: Radius.lg)
-                .fill(Theme.xp.opacity(0.6))
-                .offset(y: pressDepth)
+        Button(action: {
+            Haptic.light()
+            action()
+        }) {
+            ZStack(alignment: .top) {
+                // Shadow card underneath (golden tint)
+                RoundedRectangle(cornerRadius: Radius.lg)
+                    .fill(Theme.xp.opacity(0.6))
+                    .offset(y: pressDepth)
 
-            // Main card content
-            VStack(spacing: 0) {
-                // Image area
-                ZStack(alignment: .topTrailing) {
-                    Image(imageName)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: imageSize)
-                        .offset(y: imageOffset)
+                // Main card content
+                VStack(spacing: 0) {
+                    // Image area
+                    ZStack(alignment: .topTrailing) {
+                        Image(imageName)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: imageSize)
+                            .offset(y: imageOffset)
 
-                    // Completed checkmark
-                    if isCompleted {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.title2)
-                            .foregroundColor(Theme.success)
-                            .padding(Spacing.sm)
+                        // Completed checkmark
+                        if isCompleted {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(Theme.success)
+                                .padding(Spacing.sm)
+                        }
                     }
-                }
-                .frame(maxWidth: .infinity)
-                .frame(height: 150)
-                .clipped()
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 150)
+                    .clipped()
 
-                // Text area with top border
-                VStack(spacing: Spacing.xs) {
-                    Text(title)
-                        .font(Typography.headline)
-                        .foregroundColor(Theme.textPrimary)
+                    // Text area with top border
+                    VStack(spacing: Spacing.xs) {
+                        Text(title)
+                            .font(Typography.headline)
+                            .foregroundColor(Theme.textPrimary)
 
-                    Text(subtitle)
-                        .font(Typography.caption)
-                        .foregroundColor(Theme.textSecondary)
+                        Text(subtitle)
+                            .font(Typography.caption)
+                            .foregroundColor(Theme.textSecondary)
+                    }
+                    .padding(.top, Spacing.lg)
+                    .padding(.bottom, Spacing.md)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.white.opacity(0.05))
+                    .overlay(
+                        Rectangle()
+                            .fill(Theme.surfaceBorder)
+                            .frame(height: 1),
+                        alignment: .top
+                    )
                 }
-                .padding(.top, Spacing.lg)
-                .padding(.bottom, Spacing.md)
-                .frame(maxWidth: .infinity)
-                .background(Color.white.opacity(0.05))
-                .overlay(
-                    Rectangle()
-                        .fill(Theme.surfaceBorder)
-                        .frame(height: 1),
-                    alignment: .top
-                )
+                .background(Theme.surfaceElevated)
+                .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
             }
-            .background(Theme.surfaceElevated)
-            .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
-            .offset(y: isPressed ? pressDepth : 0)
-            .animation(.easeOut(duration: 0.08), value: isPressed)
         }
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { _ in
-                    if !isPressed {
-                        isPressed = true
-                        Haptic.light()
-                    }
-                }
-                .onEnded { _ in
-                    isPressed = false
-                    action()
-                }
-        )
+        .buttonStyle(.plain)
+        .pressable(scale: 0.97)
     }
 }
 

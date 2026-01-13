@@ -30,3 +30,4 @@ After adding fonts, run the app and check the Typography preview in Xcode Previe
 If fonts load correctly, you'll see Plus Jakarta Sans instead of system fonts.
 
 The app will gracefully fall back to system fonts if custom fonts are not installed.
+

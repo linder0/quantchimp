@@ -60,49 +60,47 @@ struct PlaySelectionView: View {
                 VStack(spacing: Spacing.smd) {
                     // Active game modes - side by side cards
                     HStack(spacing: Spacing.smd) {
-                        PlayOptionCard(
-                            imageName: "monkey_daily_puzzle",
-                            title: "Daily Puzzle",
-                            subtitle: appState.completedDailyToday ? "Completed" : "Ready to play",
-                            isCompleted: appState.completedDailyToday,
-                            imageOffset: 10
-                        ) {
-                            dismiss()
-                            onSelectDaily()
-                        }
-
-                        PlayOptionCard(
-                            imageName: "monkey_sprint",
-                            title: "Sprint",
-                            subtitle: "60 second challenge",
-                            imageOffset: 20,
-                            imageSize: 160
-                        ) {
-                            dismiss()
-                            onSelectSprint()
+                        ForEach(GameMode.activeModesForCards) { mode in
+                            PlayOptionCard(
+                                imageName: mode.imageName,
+                                title: mode.rawValue,
+                                subtitle: mode.subtitle(for: appState),
+                                isCompleted: mode.isCompleted(for: appState),
+                                imageOffset: mode.imageOffset,
+                                imageSize: mode.imageSize
+                            ) {
+                                dismiss()
+                                handleGameModeSelection(mode)
+                            }
                         }
                     }
 
                     // Future modes (disabled)
-                    PlayOptionTile(
-                        imageName: "monkey_tournament",
-                        title: "Tournaments",
-                        subtitle: "Coming soon",
-                        isDisabled: true
-                    ) {}
-
-                    PlayOptionTile(
-                        imageName: "monkey_challenge",
-                        title: "Challenge a Friend",
-                        subtitle: "Coming soon",
-                        isDisabled: true
-                    ) {}
+                    ForEach(GameMode.disabledModesForTiles) { mode in
+                        PlayOptionTile(
+                            imageName: mode.imageName,
+                            title: mode.rawValue,
+                            subtitle: mode.subtitle(for: appState),
+                            isDisabled: true
+                        ) {}
+                    }
                 }
                 .padding(.horizontal, Spacing.lg)
                 .padding(.top, Spacing.lg)
 
                 Spacer()
             }
+        }
+    }
+
+    private func handleGameModeSelection(_ mode: GameMode) {
+        switch mode {
+        case .daily:
+            onSelectDaily()
+        case .sprint:
+            onSelectSprint()
+        case .tournament, .challenge:
+            break // Disabled modes
         }
     }
 }

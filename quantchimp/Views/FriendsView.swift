@@ -10,6 +10,8 @@ import SwiftUI
 struct FriendsView: View {
     @EnvironmentObject var appState: AppState
     @State private var showShareSheet = false
+    @State private var scrollOffset: CGFloat = 0
+    @State private var initialScrollOffset: CGFloat = 0
 
     private let inviteMessage = """
     Hey! I've been training my brain with QuantChimp 🐵
@@ -19,37 +21,78 @@ struct FriendsView: View {
     Download it here: [App Store Link]
     """
 
+    // Header transition thresholds
+    private let collapseThreshold: CGFloat = 60
+
+    private var collapseProgress: CGFloat {
+        guard scrollOffset < 0 else { return 0 }
+        return min(1, abs(scrollOffset) / collapseThreshold)
+    }
+
+    private func lerp(_ a: CGFloat, _ b: CGFloat, _ t: CGFloat) -> CGFloat {
+        a + (b - a) * t
+    }
+
     var body: some View {
-        VStack(spacing: 0) {
-            // Colored header with monkey, text, and invite button
-            friendsHeader
+        Group {
+            if appState.hasFriends {
+                // Transforming header when friends exist
+                ZStack(alignment: .top) {
+                    // Main scrollable content
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            // Spacer for header with scroll tracking
+                            Color.clear
+                                .frame(height: 180)
+                                .overlay(
+                                    GeometryReader { geometry in
+                                        Color.clear
+                                            .onAppear {
+                                                initialScrollOffset = geometry.frame(in: .global).minY
+                                            }
+                                            .onChange(of: geometry.frame(in: .global).minY) { _, newValue in
+                                                scrollOffset = newValue - initialScrollOffset
+                                            }
+                                    }
+                                )
 
-            // Content area
-            ScrollView {
-                VStack(spacing: Spacing.lg) {
-                    if appState.hasFriends {
-                        friendsList
-                    } else {
-                        emptyStateHint
+                            VStack(spacing: Spacing.lg) {
+                                friendsList
+                                Spacer(minLength: 40)
+                            }
+                            .padding(Spacing.md)
+                        }
                     }
+                    .scrollIndicators(.hidden)
+                    .background(Theme.background.ignoresSafeArea(edges: .top))
 
-                    Spacer(minLength: 40)
+                    // Transforming header
+                    friendsHeader
                 }
-                .padding(Spacing.md)
+                .navigationBarHidden(true)
+                .ignoresSafeArea(edges: .top)
+            } else {
+                // Static header when no friends
+                VStack(spacing: 0) {
+                    staticFriendsHeader
+
+                    // Empty state centered in remaining space
+                    emptyStateHint
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Theme.background)
+                }
+                .background(Theme.background.ignoresSafeArea(edges: .top))
             }
-            .scrollIndicators(.hidden)
-            .background(Theme.background)
         }
-        .background(Theme.background.ignoresSafeArea())
         .sheet(isPresented: $showShareSheet) {
             ShareSheet(activityItems: [inviteMessage])
         }
     }
 
-    // MARK: - Colored Header
-    private var friendsHeader: some View {
+    // MARK: - Static Header (no friends)
+    private var staticFriendsHeader: some View {
         HStack(alignment: .bottom, spacing: 0) {
-            // Monkey on left - bigger to fill space
+            // Monkey on left
             Image("monkey_no_friends")
                 .resizable()
                 .scaledToFit()
@@ -58,21 +101,14 @@ struct FriendsView: View {
 
             // Text and button on right
             VStack(alignment: .leading, spacing: Spacing.sm) {
-                Text(appState.hasFriends ? "Friends" : "No friends yet")
+                Text("No friends yet")
                     .font(Typography.heading1)
                     .foregroundColor(.white)
 
-                if !appState.hasFriends {
-                    Text("Invite friends to compete!")
-                        .font(Typography.caption)
-                        .foregroundColor(.white.opacity(0.8))
-                } else {
-                    Text("\(appState.friends.count) friend\(appState.friends.count == 1 ? "" : "s")")
-                        .font(Typography.caption)
-                        .foregroundColor(.white.opacity(0.8))
-                }
+                Text("Invite friends to compete!")
+                    .font(Typography.caption)
+                    .foregroundColor(.white.opacity(0.8))
 
-                // Invite button under text
                 inviteButton
             }
             .padding(.bottom, Spacing.lg)
@@ -91,6 +127,58 @@ struct FriendsView: View {
             .ignoresSafeArea(edges: .top)
         )
         .clipped()
+    }
+
+    // MARK: - Transforming Header (has friends)
+    private var friendsHeader: some View {
+        VStack(spacing: 0) {
+            // Main header row
+            HStack(alignment: .bottom, spacing: 0) {
+                // Monkey on left - scales down smoothly
+                Image("monkey_no_friends")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 200, height: 200)
+                    .scaleEffect(lerp(1.0, 0, collapseProgress), anchor: .bottomLeading)
+                    .frame(
+                        width: lerp(200, 0, collapseProgress),
+                        height: lerp(200, 0, collapseProgress)
+                    )
+                    .opacity(1 - collapseProgress)
+                    .offset(x: -Spacing.sm, y: -Spacing.sm)
+
+                // Text and button
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    Text("Friends")
+                        .font(Typography.heading1)
+                        .scaleEffect(lerp(1.0, 0.8, collapseProgress), anchor: .leading)
+                        .foregroundColor(.white)
+
+                    Text("\(appState.friends.count) friend\(appState.friends.count == 1 ? "" : "s")")
+                        .font(Typography.caption)
+                        .foregroundColor(.white.opacity(0.8))
+                        .opacity(1 - collapseProgress)
+                        .frame(height: lerp(18, 0, collapseProgress), alignment: .top)
+                        .clipped()
+
+                    inviteButton
+                        .scaleEffect(lerp(1.0, 0.9, collapseProgress), anchor: .leading)
+                }
+
+                Spacer()
+            }
+            .padding(.horizontal, Spacing.md)
+            .padding(.top, 60)
+            .padding(.bottom, lerp(Spacing.md, 10, collapseProgress))
+            .frame(maxWidth: .infinity)
+        }
+        .background(Theme.accentSecondary.ignoresSafeArea(edges: .top))
+        .shadow(
+            color: Shadow.md.color.opacity(Double(collapseProgress)),
+            radius: lerp(0, Shadow.md.radius, collapseProgress),
+            x: 0,
+            y: lerp(0, Shadow.md.y, collapseProgress)
+        )
     }
 
     // MARK: - Empty State Hint
@@ -118,9 +206,7 @@ struct FriendsView: View {
     // MARK: - Friends List
     private var friendsList: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
-            Text("LEADERBOARD")
-                .font(Typography.headline)
-                .foregroundColor(Theme.textPrimary)
+            SectionHeader(title: "Leaderboard")
 
             VStack(spacing: Spacing.sm) {
                 ForEach(appState.friends.sorted { $0.xp > $1.xp }) { friend in

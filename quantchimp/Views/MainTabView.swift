@@ -31,51 +31,65 @@ struct MainTabView: View {
     @State private var homeNavigationPath = NavigationPath()
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Content area
-            ZStack {
-                switch selectedTab {
-                case .home:
-                    NavigationStack(path: $homeNavigationPath) {
-                        HomeView(navigationPath: $homeNavigationPath)
+        GeometryReader { geometry in
+            VStack(spacing: 0) {
+                // Content area
+                ZStack {
+                    switch selectedTab {
+                    case .home:
+                        NavigationStack(path: $homeNavigationPath) {
+                            HomeView(navigationPath: $homeNavigationPath)
+                        }
+                    case .stats:
+                        StatsView()
+                    case .friends:
+                        FriendsView()
+                    case .profile:
+                        ProfileView()
                     }
-                case .stats:
-                    StatsView()
-                case .friends:
-                    FriendsView()
-                case .profile:
-                    ProfileView()
                 }
-            }
-            .ignoresSafeArea(edges: .top)
+                .frame(maxHeight: .infinity)
 
-            // Custom tab bar
-            CustomTabBar(selectedTab: $selectedTab)
+                // Custom tab bar with fixed bottom safe area
+                CustomTabBar(selectedTab: $selectedTab, bottomSafeArea: geometry.safeAreaInsets.bottom)
+            }
         }
-        .ignoresSafeArea(.keyboard)
+        .ignoresSafeArea()
     }
 }
 
 struct CustomTabBar: View {
     @Binding var selectedTab: Tab
+    let bottomSafeArea: CGFloat
 
     var body: some View {
-        HStack(spacing: 0) {
-            ForEach(Tab.allCases, id: \.self) { tab in
-                TabBarButton(
-                    tab: tab,
-                    isSelected: selectedTab == tab
-                ) {
-                    withAnimation(Motion.ease(Motion.quick)) {
-                        selectedTab = tab
+        VStack(spacing: 0) {
+            // Top border for separation from content
+            Rectangle()
+                .fill(Theme.surfaceBorder)
+                .frame(height: 1)
+
+            HStack(spacing: 0) {
+                ForEach(Tab.allCases, id: \.self) { tab in
+                    TabBarButton(
+                        tab: tab,
+                        isSelected: selectedTab == tab
+                    ) {
+                        withAnimation(Motion.ease(Motion.quick)) {
+                            selectedTab = tab
+                        }
                     }
                 }
             }
+            .padding(.top, Spacing.md)
+            .padding(.bottom, Spacing.xxl)
+
+            // Fixed space for bottom safe area (home indicator)
+            Color.clear
+                .frame(height: bottomSafeArea)
         }
-        .padding(.top, Spacing.smd)
-        .padding(.bottom, Spacing.sm)
         .frame(maxWidth: .infinity)
-        .background(Theme.surface.ignoresSafeArea(edges: .bottom))
+        .background(Theme.surface)
     }
 }
 

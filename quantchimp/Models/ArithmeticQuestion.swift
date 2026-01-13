@@ -28,6 +28,15 @@ struct ArithmeticQuestion {
             case .divide: return "division"
             }
         }
+
+        var imageName: String {
+            switch self {
+            case .add: return "op_addition"
+            case .subtract: return "op_subtraction"
+            case .multiply: return "op_multiplication"
+            case .divide: return "op_division"
+            }
+        }
     }
 
     var displayText: String {
