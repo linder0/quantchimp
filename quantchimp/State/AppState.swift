@@ -43,6 +43,7 @@ class AppState: ObservableObject {
         didSet {
             saveUserProfile()
             syncAudioSettings()
+            syncThemeColor()
         }
     }
 
@@ -58,19 +59,6 @@ class AppState: ObservableObject {
     var completedDailyToday: Bool {
         guard let lastDate = lastDailyCompletedDate else { return false }
         return DateHelpers.isSameDay(lastDate, Date())
-    }
-
-    var currentLevel: Int {
-        return xp / 200 + 1
-    }
-
-    var xpProgressInLevel: Double {
-        let xpInCurrentLevel = xp % 200
-        return Double(xpInCurrentLevel) / 200.0
-    }
-
-    var xpToNextLevel: Int {
-        return 200 - (xp % 200)
     }
 
     // MARK: - Initialization
@@ -97,11 +85,19 @@ class AppState: ObservableObject {
 
         // Sync audio settings on launch
         syncAudioSettings()
+
+        // Sync theme color on launch
+        syncThemeColor()
     }
 
     /// Sync sound settings with SoundManager
     private func syncAudioSettings() {
         SoundManager.shared.setSoundsEnabled(userProfile.soundEnabled)
+    }
+
+    /// Sync theme color with ThemeManager
+    private func syncThemeColor() {
+        ThemeManager.shared.setAccentColor(userProfile.profileColor)
     }
 
     // MARK: - Streak Logic

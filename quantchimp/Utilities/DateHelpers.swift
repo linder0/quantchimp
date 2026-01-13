@@ -54,4 +54,27 @@ enum DateHelpers {
     static func startOfDay(for date: Date = Date()) -> Date {
         Calendar.current.startOfDay(for: date)
     }
+    
+    /// Get the time remaining until midnight (next day)
+    /// - Returns: Time interval in seconds until midnight
+    static func timeUntilMidnight() -> TimeInterval {
+        let now = Date()
+        let calendar = Calendar.current
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: startOfDay(for: now)) ?? now
+        return tomorrow.timeIntervalSince(now)
+    }
+    
+    /// Format time interval as countdown string (e.g., "5h 23m")
+    /// - Parameter timeInterval: Time interval in seconds
+    /// - Returns: Formatted countdown string
+    static func formatCountdown(_ timeInterval: TimeInterval) -> String {
+        let hours = Int(timeInterval) / 3600
+        let minutes = (Int(timeInterval) % 3600) / 60
+        
+        if hours > 0 {
+            return "\(hours)h \(minutes)m"
+        } else {
+            return "\(minutes)m"
+        }
+    }
 }

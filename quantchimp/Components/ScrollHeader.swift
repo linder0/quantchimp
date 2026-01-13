@@ -88,18 +88,26 @@ struct ScrollHeader: View {
     let isScrolled: Bool
 
     var body: some View {
-        HStack {
-            Text(title)
-                .font(Typography.heading2)
-                .foregroundColor(Theme.textPrimary)
+        VStack(spacing: 0) {
+            HStack {
+                Text(title)
+                    .font(Typography.heading2)
+                    .foregroundColor(Theme.textPrimary)
 
-            Spacer()
+                Spacer()
+            }
+            .padding(.horizontal, Spacing.md)
+            .padding(.top, 60)
+            .padding(.bottom, Spacing.smd)
+            .frame(maxWidth: .infinity)
+
+            // Bottom border
+            Rectangle()
+                .fill(Theme.surfaceBorder)
+                .frame(height: 1)
+                .padding(.horizontal, Spacing.md)
         }
-        .padding(.horizontal, Spacing.md)
-        .padding(.top, 60)
-        .padding(.bottom, Spacing.smd)
-        .frame(maxWidth: .infinity)
-        .background(color)
+        .background(Theme.background)
         .ignoresSafeArea(edges: .top)
         .shadow(
             color: isScrolled ? Shadow.md.color : .clear,
@@ -215,7 +223,7 @@ struct ScrollableViewWithHeader<Content: View>: View {
     NavigationStack {
         ScrollableViewWithHeader(
             title: "Friends",
-            headerColor: Theme.surfaceElevated
+            headerColor: Theme.background
         ) {
             VStack(spacing: Spacing.lg) {
                 ForEach(0..<10) { i in

@@ -30,9 +30,4 @@ struct Friend: Codable, Identifiable, Equatable {
         self.xp = xp
         self.addedDate = addedDate
     }
-
-    var level: Int {
-        xp / 200 + 1
-    }
 }
-

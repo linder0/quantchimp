@@ -23,9 +23,11 @@ struct HomeView: View {
         scrollOffset < -collapseThreshold
     }
 
+    // DISABLED: Header transform
     private var collapseProgress: CGFloat {
-        guard scrollOffset < 0 else { return 0 }
-        return min(1, abs(scrollOffset) / collapseThreshold)
+        return 0 // Always return 0 to disable transform
+        // guard scrollOffset < 0 else { return 0 }
+        // return min(1, abs(scrollOffset) / collapseThreshold)
     }
 
     // Linear interpolation helper for smooth transitions
@@ -38,32 +40,28 @@ struct HomeView: View {
             // Main scrollable content
             ScrollView {
                 VStack(spacing: 0) {
-                    // Spacer for header with scroll tracking
+                    // Spacer for header - DISABLED scroll tracking
                     Color.clear
-                        .frame(height: 180)
-                        .overlay(
-                            GeometryReader { geometry in
-                                Color.clear
-                                    .onAppear {
-                                        initialScrollOffset = geometry.frame(in: .global).minY
-                                    }
-                                    .onChange(of: geometry.frame(in: .global).minY) { _, newValue in
-                                        scrollOffset = newValue - initialScrollOffset
-                                    }
-                            }
-                        )
+                        .frame(height: 250) // Fixed height when transform is disabled
+                        // DISABLED: Scroll tracking for header transform
+                        // .overlay(
+                        //     GeometryReader { geometry in
+                        //         Color.clear
+                        //             .onAppear {
+                        //                 initialScrollOffset = geometry.frame(in: .global).minY
+                        //             }
+                        //             .onChange(of: geometry.frame(in: .global).minY) { _, newValue in
+                        //                 scrollOffset = newValue - initialScrollOffset
+                        //             }
+                        //     }
+                        // )
 
                     VStack(spacing: Spacing.md) {
-                        // Streak/activity section
-                        weeklyActivitySection
-
                         // Game modes section
                         gameModesSection
-
-                        // Game history section
-                        gameHistorySection
                     }
-                    .padding(Spacing.md)
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.top, Spacing.md)
                     .padding(.bottom, Spacing.lg)
                 }
             }
@@ -95,10 +93,6 @@ struct HomeView: View {
 
     // MARK: - Transforming Header
 
-    private var profileColor: Color {
-        Color(hex: appState.userProfile.profileColor.hex)
-    }
-
     // Smooth scale factor for badges (1.0 -> 0.85)
     private var badgeScale: CGFloat {
         lerp(1.0, 0.85, collapseProgress)
@@ -125,14 +119,6 @@ struct HomeView: View {
                         .font(Typography.heading2)
                         .scaleEffect(lerp(1.0, 0.8, collapseProgress), anchor: .leading)
                         .foregroundColor(.white)
-
-                    // Level text - always render, fade out smoothly
-                    Text("Level \(appState.currentLevel)")
-                        .font(Typography.caption)
-                        .foregroundColor(.white.opacity(0.8))
-                        .opacity(1 - collapseProgress)
-                        .frame(height: lerp(18, 0, collapseProgress), alignment: .top)
-                        .clipped()
                 }
 
                 Spacer()
@@ -175,35 +161,26 @@ struct HomeView: View {
             }
             .padding(.horizontal, Spacing.md)
             .padding(.top, 60)
-            .padding(.bottom, lerp(Spacing.md, 10, collapseProgress))
+            .padding(.bottom, Spacing.md)
             .frame(maxWidth: .infinity)
 
-            // XP Progress bar - always render, fade out smoothly
-            VStack(spacing: Spacing.xs) {
-                XPBarCompact(progress: appState.xpProgressInLevel)
-
-                HStack {
-                    Text("\(appState.xpToNextLevel) XP to Level \(appState.currentLevel + 1)")
-                        .font(Typography.captionSmall)
-                        .foregroundColor(.white.opacity(0.8))
-
-                    Spacer()
-                }
-            }
-            .padding(.horizontal, Spacing.md)
-            .padding(.bottom, Spacing.smd)
-            .opacity(1 - collapseProgress)
-            .frame(height: lerp(50, 0, collapseProgress), alignment: .top)
-            .clipped()
+            // Quest Suggestion Card - DISABLED transform
+            featuredQuestCard
+                .padding(.bottom, Spacing.lg)
+                // DISABLED: Transform effects
+                // .scaleEffect(x: 1.0, y: lerp(1.0, 0.0, collapseProgress), anchor: .top)
+                // .opacity(lerp(1.0, 0.0, collapseProgress))
+                // .frame(height: lerp(50, 0, collapseProgress))
         }
-        .background(profileColor)
+        .background(Theme.accent)
         .ignoresSafeArea(edges: .top)
-        .shadow(
-            color: Shadow.md.color.opacity(Double(collapseProgress)),
-            radius: lerp(0, Shadow.md.radius, collapseProgress),
-            x: 0,
-            y: lerp(0, Shadow.md.y, collapseProgress)
-        )
+        // DISABLED: Shadow animation during header transform
+        // .shadow(
+        //     color: Shadow.md.color.opacity(Double(collapseProgress)),
+        //     radius: lerp(0, Shadow.md.radius, collapseProgress),
+        //     x: 0,
+        //     y: lerp(0, Shadow.md.y, collapseProgress)
+        // )
     }
 
     private var gameModesSection: some View {
@@ -225,16 +202,6 @@ struct HomeView: View {
                     }
                 }
             }
-
-            // Future modes (disabled)
-            ForEach(GameMode.disabledModesForTiles) { mode in
-                PlayOptionTile(
-                    imageName: mode.imageName,
-                    title: mode.rawValue,
-                    subtitle: mode.subtitle(for: appState),
-                    isDisabled: true
-                ) {}
-            }
         }
     }
 
@@ -249,105 +216,115 @@ struct HomeView: View {
         }
     }
 
-    private var weeklyActivitySection: some View {
-        VStack(alignment: .leading, spacing: Spacing.smd) {
-            SectionHeader(title: "Weekly Activity")
+    private var featuredQuestCard: some View {
+        let quest = closestQuest
 
-            weeklyActivityCard
-        }
-    }
-
-    private var weeklyActivityCard: some View {
-        let days = ["M", "T", "W", "T", "F", "S", "S"]
-        let activity = statsManager.weeklyActivity
-
-        return VStack(spacing: Spacing.sm) {
-            // Streak count header
+        return VStack(alignment: .leading, spacing: Spacing.xs) {
+            // Title and reward
             HStack {
-                Image(systemName: "flame.fill")
-                    .foregroundColor(Theme.streak)
-                Text("\(statsManager.currentStreak) day streak")
-                    .font(Typography.label as Font)
-                    .foregroundColor(Theme.textPrimary)
+                Text(quest.title)
+                    .font(Typography.bodyBold)
+                    .foregroundColor(.white)
+
                 Spacer()
-            }
 
-            // Days of week
-            HStack(spacing: 0) {
-                ForEach(0..<7, id: \.self) { index in
-                    weeklyDayView(index: index, days: days, activity: activity)
-                }
-            }
-        }
-        .padding(Spacing.md)
-        .background(
-            LinearGradient(
-                colors: [Theme.streak.opacity(0.06), Theme.streak.opacity(0.02)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .cardStyle()
-    }
-
-    @ViewBuilder
-    private func weeklyDayView(index: Int, days: [String], activity: [Bool]) -> some View {
-        let isActive = index < activity.count && activity[index]
-
-        VStack(spacing: Spacing.xs) {
-            Text(days[index])
-                .font(.system(size: 11, weight: .medium))
-                .foregroundColor(Theme.textTertiary)
-
-            ZStack {
-                Circle()
-                    .fill(isActive ? Theme.streak : Theme.surfaceElevated)
-                    .frame(width: 32, height: 32)
-
-                if isActive {
-                    Image(systemName: "flame.fill")
-                        .font(.system(size: 14))
+                // XP reward
+                HStack(spacing: Spacing.xs) {
+                    Image(systemName: "star.fill")
+                        .font(.caption)
+                        .foregroundColor(Theme.xp)
+                    Text("+\(quest.xpReward)")
+                        .font(Typography.caption)
                         .foregroundColor(.white)
                 }
             }
-        }
-        .frame(maxWidth: .infinity)
-    }
 
-    private var gameHistorySection: some View {
-        VStack(alignment: .leading, spacing: Spacing.smd) {
-            SectionHeader(title: "Recent Sessions")
+            // Progress bar
+            HStack(spacing: Spacing.xs) {
+                GeometryReader { geometry in
+                    ZStack(alignment: .leading) {
+                        // Background
+                        RoundedRectangle(cornerRadius: Radius.sm)
+                            .fill(.white.opacity(0.2))
+                            .frame(height: 6)
 
-            if statsManager.sessionHistory.isEmpty {
-                // Empty state
-                VStack(spacing: Spacing.md) {
-                    Image("monkey_no_sessions")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 100, height: 100)
-
-                    Text("No sessions yet")
-                        .font(Typography.headline)
-                        .foregroundColor(Theme.textPrimary)
-
-                    Text("Choose a mode above to start!")
-                        .font(Typography.caption)
-                        .foregroundColor(Theme.textSecondary)
-                        .multilineTextAlignment(.center)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, Spacing.xl)
-                .cardStyle()
-            } else {
-                // Session history
-                LazyVStack(spacing: Spacing.sm) {
-                    ForEach(statsManager.recentSessions) { session in
-                        SessionRow(session: session)
+                        // Progress
+                        RoundedRectangle(cornerRadius: Radius.sm)
+                            .fill(.white)
+                            .frame(
+                                width: geometry.size.width * CGFloat(min(quest.progress, quest.total)) / CGFloat(quest.total),
+                                height: 6
+                            )
                     }
                 }
+                .frame(height: 6)
+
+                Text("\(quest.progress)/\(quest.total)")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.white.opacity(0.8))
+                    .frame(width: 35)
             }
         }
+        .padding(.horizontal, Spacing.md)
     }
+
+    private struct QuestInfo {
+        let icon: String
+        let title: String
+        let description: String
+        let progress: Int
+        let total: Int
+        let xpReward: Int
+        var progressPercentage: Double {
+            Double(progress) / Double(total)
+        }
+    }
+
+    private var closestQuest: QuestInfo {
+        let totalQuestionsAnswered = statsManager.sessionHistory.reduce(0) { $0 + $1.questionsAnswered }
+
+        let quests = [
+            QuestInfo(
+                icon: "flame.fill",
+                title: "Week Warrior",
+                description: "Maintain a 7-day streak",
+                progress: statsManager.currentStreak,
+                total: 7,
+                xpReward: 100
+            ),
+            QuestInfo(
+                icon: "bolt.fill",
+                title: "Speed Demon",
+                description: "Complete 10 sprint sessions",
+                progress: statsManager.sprintCompleted,
+                total: 10,
+                xpReward: 150
+            ),
+            QuestInfo(
+                icon: "100.square.fill",
+                title: "Century Club",
+                description: "Answer 100 questions",
+                progress: totalQuestionsAnswered,
+                total: 100,
+                xpReward: 200
+            ),
+            QuestInfo(
+                icon: "trophy.fill",
+                title: "XP Master",
+                description: "Earn 2000 XP",
+                progress: appState.xp,
+                total: 2000,
+                xpReward: 500
+            )
+        ]
+
+        // Find the incomplete quest with the highest progress percentage
+        let incompleteQuests = quests.filter { $0.progress < $0.total }
+
+        return incompleteQuests.max(by: { $0.progressPercentage < $1.progressPercentage })
+            ?? quests.first! // Fallback to first quest if all are complete
+    }
+
 }
 
 #Preview {

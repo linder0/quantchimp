@@ -11,6 +11,7 @@ import SwiftUI
 struct quantchimpApp: App {
     @StateObject private var appState = AppState()
     @StateObject private var statsManager = StatsManager()
+    @StateObject private var themeManager = ThemeManager.shared
     @State private var isLoading = true
 
     init() {
@@ -27,9 +28,11 @@ struct quantchimpApp: App {
                         MainTabView()
                             .environmentObject(appState)
                             .environmentObject(statsManager)
+                            .environmentObject(themeManager)
                     } else {
                         OnboardingContainerView()
                             .environmentObject(appState)
+                            .environmentObject(themeManager)
                     }
                 }
                 .opacity(isLoading ? 0 : 1)

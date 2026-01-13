@@ -13,7 +13,7 @@ enum GameMode: String, Codable, CaseIterable, Identifiable {
     case sprint = "Sprint"
     case tournament = "Tournaments"
     case challenge = "Challenge a Friend"
-    
+
     var id: String { rawValue }
 
     var icon: String {
@@ -42,7 +42,7 @@ enum GameMode: String, Codable, CaseIterable, Identifiable {
         case .challenge: return Theme.accent
         }
     }
-    
+
     /// Vertical offset for the monkey image in the card
     var imageOffset: CGFloat {
         switch self {
@@ -52,7 +52,7 @@ enum GameMode: String, Codable, CaseIterable, Identifiable {
         case .challenge: return 15
         }
     }
-    
+
     /// Size of the monkey image
     var imageSize: CGFloat {
         switch self {
@@ -62,7 +62,7 @@ enum GameMode: String, Codable, CaseIterable, Identifiable {
         case .challenge: return 140
         }
     }
-    
+
     /// Whether this game mode is currently enabled
     var isEnabled: Bool {
         switch self {
@@ -70,7 +70,7 @@ enum GameMode: String, Codable, CaseIterable, Identifiable {
         case .tournament, .challenge: return false
         }
     }
-    
+
     /// Get the subtitle text for this game mode
     /// - Parameter appState: The app state to check completion status
     /// - Returns: The subtitle string
@@ -86,7 +86,7 @@ enum GameMode: String, Codable, CaseIterable, Identifiable {
             return "Coming soon"
         }
     }
-    
+
     /// Check if the mode has been completed (for showing checkmark)
     /// - Parameter appState: The app state to check completion status
     /// - Returns: True if completed
@@ -98,12 +98,12 @@ enum GameMode: String, Codable, CaseIterable, Identifiable {
             return false
         }
     }
-    
+
     /// Returns only the enabled game modes suitable for card display
     static var activeModesForCards: [GameMode] {
         [.daily, .sprint]
     }
-    
+
     /// Returns only the disabled game modes suitable for tile display
     static var disabledModesForTiles: [GameMode] {
         [.tournament, .challenge]

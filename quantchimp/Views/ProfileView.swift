@@ -157,7 +157,7 @@ struct ProfileView: View {
                     subtitle: "Coming soon"
                 )
             }
-            .cardStyle()
+            .cardStyle(hasBorder: false)
 
             // About section
             VStack(alignment: .leading, spacing: Spacing.md) {
@@ -195,7 +195,7 @@ struct ProfileView: View {
                     }
                     #endif
                 }
-                .cardStyle()
+                .cardStyle(hasBorder: false)
             }
         }
     }

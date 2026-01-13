@@ -250,15 +250,11 @@ struct FriendRow: View {
                 .frame(width: 44, height: 44)
                 .clipShape(Circle())
 
-            // Name and level
+            // Name
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text(friend.displayName)
                     .font(Typography.bodyBold)
                     .foregroundColor(Theme.textPrimary)
-
-                Text("Level \(friend.level)")
-                    .font(Typography.caption)
-                    .foregroundColor(Theme.textSecondary)
             }
 
             Spacer()

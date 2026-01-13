@@ -11,4 +11,3 @@ enum NavigationDestination: Hashable {
     case dailyPuzzle
     case arithmeticSetup
 }
-

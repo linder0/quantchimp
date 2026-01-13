@@ -7,6 +7,47 @@
 
 import SwiftUI
 
+// MARK: - Theme Manager
+
+/// Dynamic theme manager that adapts to user's selected accent color
+@MainActor
+class ThemeManager: ObservableObject {
+    static let shared = ThemeManager()
+
+    @Published var accentColor: ProfileColor = .blue
+
+    private init() {}
+
+    /// Set the accent color from user profile
+    func setAccentColor(_ color: ProfileColor) {
+        accentColor = color
+    }
+
+    /// Get the primary accent color
+    var accent: Color {
+        Color(hex: accentColor.hex)
+    }
+
+    /// Get a lighter tint of the accent color (for gradients)
+    var accentLight: Color {
+        Color(hex: accentColor.lightHex)
+    }
+
+    /// Accent gradient for XP bars, highlights
+    var accentGradient: LinearGradient {
+        LinearGradient(
+            colors: [accent, accentLight],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+    }
+
+    /// Success color (matches accent for consistency)
+    var success: Color {
+        accent
+    }
+}
+
 // MARK: - Color Tokens
 
 /// Semantic color tokens for the QuantChimp design system
@@ -38,25 +79,27 @@ enum Theme {
     /// Tertiary text - Dimmer gray
     static let textTertiary = Color(hex: "5C6370")
 
-    // MARK: - Accent Colors
+    // MARK: - Dynamic Accent Colors (use ThemeManager.shared for user-selected colors)
 
-    /// Brand accent color - Electric amber
-    static let accent = Color(hex: "FFB800")
+    /// Brand accent color - Use ThemeManager.shared.accent for dynamic color
+    static var accent: Color {
+        ThemeManager.shared.accent
+    }
 
-    /// Accent gradient for XP bars, highlights
-    static let accentGradient = LinearGradient(
-        colors: [Color(hex: "FFB800"), Color(hex: "FFD54F")],
-        startPoint: .leading,
-        endPoint: .trailing
-    )
+    /// Accent gradient - Use ThemeManager.shared.accentGradient for dynamic gradient
+    static var accentGradient: LinearGradient {
+        ThemeManager.shared.accentGradient
+    }
 
     /// Secondary accent for variety
     static let accentSecondary = Color(hex: "6366F1") // Indigo
 
     // MARK: - Semantic Colors
 
-    /// Correct answers - Mint green
-    static let success = Color(hex: "10B981")
+    /// Correct answers - Use ThemeManager.shared.success for dynamic color
+    static var success: Color {
+        ThemeManager.shared.success
+    }
 
     /// Wrong answers - Coral red
     static let error = Color(hex: "EF4444")

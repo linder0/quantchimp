@@ -9,14 +9,16 @@ import SwiftUI
 
 enum Tab: String, CaseIterable {
     case home = "Home"
-    case stats = "Stats"
+    case matchHistory = "History"
+    case quests = "Quests"
     case friends = "Friends"
     case profile = "Profile"
 
     var icon: String {
         switch self {
         case .home: return "tab_home"
-        case .stats: return "tab_stats"
+        case .matchHistory: return "clock"
+        case .quests: return "trophy"
         case .friends: return "tab_friends"
         case .profile: return "tab_profile"
         }
@@ -40,8 +42,10 @@ struct MainTabView: View {
                         NavigationStack(path: $homeNavigationPath) {
                             HomeView(navigationPath: $homeNavigationPath)
                         }
-                    case .stats:
-                        StatsView()
+                    case .matchHistory:
+                        MatchHistoryView()
+                    case .quests:
+                        QuestsView()
                     case .friends:
                         FriendsView()
                     case .profile:
@@ -109,18 +113,15 @@ struct TabBarButton: View {
                     if isSelected {
                         RoundedRectangle(cornerRadius: Radius.md)
                             .fill(Color.white.opacity(0.1))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: Radius.md)
-                                    .stroke(Theme.xp.opacity(0.6), lineWidth: 1.5)
-                            )
                             .frame(width: 52, height: 38)
                     }
 
+                    // Use custom asset
                     Image(tab.icon)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 32, height: 32)
-                        .opacity(isSelected ? 1.0 : 0.5)
+                        .frame(width: isSelected ? 38 : 32, height: isSelected ? 38 : 32)
+                        .animation(Motion.ease(Motion.quick), value: isSelected)
                 }
             }
             .frame(maxWidth: .infinity)

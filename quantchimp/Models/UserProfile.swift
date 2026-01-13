@@ -112,6 +112,18 @@ enum ProfileColor: String, Codable, CaseIterable, Identifiable {
         case .pink: return "EC4899"
         }
     }
+
+    /// Lighter tint for gradients
+    var lightHex: String {
+        switch self {
+        case .purple: return "C084FC"
+        case .blue: return "60A5FA"
+        case .teal: return "2DD4BF"
+        case .green: return "34D399"
+        case .orange: return "FBBF24"
+        case .pink: return "F9A8D4"
+        }
+    }
 }
 
 // MARK: - User Profile
@@ -134,7 +146,7 @@ struct UserProfile: Codable {
         avatarImage: "avatar_default",
         soundEnabled: true,
         hapticsEnabled: true,
-        profileColor: .purple,
+        profileColor: .blue,
         goal: nil,
         dailyGoalMinutes: 10,
         reminderTime: nil,

@@ -13,6 +13,8 @@ struct PlayOptionCard: View {
     let title: String
     let subtitle: String
     var isCompleted: Bool = false
+    var isDisabled: Bool = false
+    var countdownText: String? = nil
     var imageOffset: CGFloat = 20
     var imageSize: CGFloat = 140
     let action: () -> Void
@@ -21,13 +23,14 @@ struct PlayOptionCard: View {
 
     var body: some View {
         Button(action: {
+            guard !isDisabled else { return }
             Haptic.light()
             action()
         }) {
             ZStack(alignment: .top) {
-                // Shadow card underneath (golden tint)
+                // Shadow card underneath (lighter grey)
                 RoundedRectangle(cornerRadius: Radius.lg)
-                    .fill(Theme.xp.opacity(0.6))
+                    .fill(Theme.surfaceElevated)
                     .offset(y: pressDepth)
 
                 // Main card content
@@ -39,6 +42,7 @@ struct PlayOptionCard: View {
                             .scaledToFit()
                             .frame(height: imageSize)
                             .offset(y: imageOffset)
+                            .opacity(isDisabled ? 0.4 : 1.0)
 
                         // Completed checkmark
                         if isCompleted {

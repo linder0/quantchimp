@@ -72,10 +72,6 @@ struct SessionRow: View {
         .padding(Spacing.smd)
         .background(Theme.surface)
         .cornerRadius(Radius.md)
-        .overlay(
-            RoundedRectangle(cornerRadius: Radius.md)
-                .stroke(Theme.surfaceBorder, lineWidth: 1)
-        )
         .surfaceShadow()
     }
 }
