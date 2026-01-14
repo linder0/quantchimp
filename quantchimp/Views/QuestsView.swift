@@ -33,67 +33,22 @@ struct QuestsView: View {
     private var achievementsSection: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             VStack(spacing: Spacing.smd) {
-                // Beginner achievements
-                AchievementCard(
-                    icon: "avatar_excited",
-                    title: "First Steps",
-                    description: "Complete your first puzzle",
-                    isUnlocked: statsManager.sessionHistory.count > 0,
-                    color: Theme.daily
-                )
+                ForEach(QuestManager.allQuests) { quest in
+                    let progress = quest.currentProgress(appState: appState, statsManager: statsManager)
+                    let isUnlocked = quest.isUnlocked(appState: appState, statsManager: statsManager)
 
-                AchievementCard(
-                    icon: "avatar_ninja",
-                    title: "Week Warrior",
-                    description: "Maintain a 7 day streak",
-                    isUnlocked: statsManager.currentStreak >= 7,
-                    progress: Double(statsManager.currentStreak) / 7.0,
-                    color: Theme.streak
-                )
-
-                AchievementCard(
-                    icon: "avatar_champion",
-                    title: "Perfect Score",
-                    description: "Complete a session with 100% accuracy",
-                    isUnlocked: statsManager.sessionHistory.contains { session in
-                        session.questionsAnswered > 0 && session.correctCount == session.questionsAnswered
-                    },
-                    color: Theme.success
-                )
-
-                AchievementCard(
-                    icon: "monkey_sprint",
-                    title: "Speed Demon",
-                    description: "Complete 10 sprint sessions",
-                    isUnlocked: statsManager.sprintCompleted >= 10,
-                    progress: Double(statsManager.sprintCompleted) / 10.0,
-                    color: Theme.sprint
-                )
-
-                AchievementCard(
-                    icon: "avatar_scientist",
-                    title: "Century Club",
-                    description: "Answer 100 questions",
-                    isUnlocked: totalQuestionsAnswered >= 100,
-                    progress: Double(totalQuestionsAnswered) / 100.0,
-                    color: Theme.level
-                )
-
-                AchievementCard(
-                    icon: "avatar_wizard",
-                    title: "XP Master",
-                    description: "Earn 2000 XP",
-                    isUnlocked: appState.xp >= 2000,
-                    progress: Double(appState.xp) / 2000.0,
-                    color: Theme.xp
-                )
+                    AchievementCard(
+                        icon: quest.icon,
+                        title: quest.title,
+                        description: quest.description,
+                        isUnlocked: isUnlocked,
+                        progress: isUnlocked ? nil : Double(progress) / Double(quest.totalRequired),
+                        progressTotal: quest.totalRequired,
+                        color: quest.color
+                    )
+                }
             }
         }
-    }
-
-    // MARK: - Helpers
-    private var totalQuestionsAnswered: Int {
-        statsManager.sessionHistory.reduce(0) { $0 + $1.questionsAnswered }
     }
 }
 
@@ -104,6 +59,7 @@ struct AchievementCard: View {
     let description: String
     let isUnlocked: Bool
     var progress: Double? = nil
+    var progressTotal: Int = 100
     let color: Color
 
     var body: some View {
@@ -117,13 +73,36 @@ struct AchievementCard: View {
 
             // Content
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text(title)
-                    .font(Typography.bodyBold as Font)
-                    .foregroundColor(isUnlocked ? color : Theme.textSecondary)
+                HStack(alignment: .center, spacing: Spacing.sm) {
+                    Text(title)
+                        .font(Typography.bodyBold as Font)
+                        .foregroundColor(isUnlocked ? color : Theme.textSecondary)
+                        .lineLimit(1)
+
+                    Spacer(minLength: 0)
+
+                    // XP reward badge if unlocked
+                    if isUnlocked {
+                        HStack(spacing: 4) {
+                            Image(systemName: "star.fill")
+                                .font(.caption)
+                                .foregroundColor(Theme.xp)
+                            Text("+200")
+                                .font(Typography.caption as Font)
+                                .foregroundColor(Theme.textPrimary)
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Theme.xp.opacity(0.15))
+                        .cornerRadius(Radius.sm)
+                        .fixedSize()
+                    }
+                }
 
                 Text(description)
                     .font(Typography.caption as Font)
                     .foregroundColor(Theme.textTertiary)
+                    .lineLimit(2)
 
                 // Progress bar if not unlocked and progress available
                 if !isUnlocked, let progress = progress, progress > 0 {

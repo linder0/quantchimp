@@ -85,28 +85,14 @@ struct ArithmeticSprintFlowView: View {
     private var setupPhase: some View {
         VStack(spacing: 0) {
             // Header with close button
-            HStack {
-                IconButton(icon: "xmark", backgroundColor: Theme.surfaceElevated, size: 36) {
-                    dismiss()
-                }
-
-                Spacer()
-
-                // Header title
-                Text("Arithmetic Sprint")
-                    .font(Typography.headline)
-                    .foregroundColor(Theme.textPrimary)
-
-                Spacer()
-
-                Color.clear.frame(width: 36, height: 36)
+            ModalHeader(title: "Arithmetic Sprint") {
+                dismiss()
             }
-            .padding(.horizontal, Spacing.md)
-            .padding(.top, Spacing.md)
-            .padding(.bottom, Spacing.sm)
 
             // Difficulty carousel - takes flexible space
-            DifficultyCarousel(selectedDifficulty: $selectedDifficulty, selectedOperations: selectedOperations)
+            GenericDifficultyCarousel(selectedDifficulty: $selectedDifficulty) { difficulty in
+                DifficultyCard(difficulty: difficulty, selectedOperations: selectedOperations)
+            }
 
             // Bottom controls - fixed height section
             VStack(spacing: Spacing.smd) {
@@ -125,61 +111,15 @@ struct ArithmeticSprintFlowView: View {
     // MARK: - Start Sprint Button
 
     private var startSprintButton: some View {
-        Button {
-            Haptic.medium()
-            Sound.tap()
+        PrimaryButton(
+            title: "Start Sprint",
+            color: Theme.sprint,
+            isEnabled: !selectedOperations.isEmpty
+        ) {
             withAnimation(Motion.spring) {
                 phase = .playing
             }
-        } label: {
-            HStack(spacing: Spacing.sm) {
-                Image(systemName: "play.fill")
-                    .font(.system(size: 18, weight: .bold))
-
-                Text("Start Sprint")
-                    .font(Typography.headline)
-            }
-            .foregroundColor(.white)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, Spacing.md + 2)
-            .background(
-                ZStack {
-                    // Gradient background
-                    RoundedRectangle(cornerRadius: Radius.lg)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Theme.sprint,
-                                    Theme.sprint.opacity(0.8),
-                                    Color(red: 0.2, green: 0.5, blue: 0.9)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-
-                    // Inner highlight
-                    RoundedRectangle(cornerRadius: Radius.lg)
-                        .stroke(
-                            LinearGradient(
-                                colors: [
-                                    Color.white.opacity(0.4),
-                                    Color.white.opacity(0.1),
-                                    Color.clear
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1.5
-                        )
-                }
-            )
-            .shadow(color: Theme.sprint.opacity(0.5), radius: 16, x: 0, y: 8)
-            .shadow(color: Theme.sprint.opacity(0.3), radius: 4, x: 0, y: 2)
         }
-        .disabled(selectedOperations.isEmpty)
-        .opacity(selectedOperations.isEmpty ? 0.5 : 1.0)
-        .pressable(scale: 0.97)
     }
 
     // MARK: - Operations Row (1x4)
@@ -225,100 +165,6 @@ struct ArithmeticSprintFlowView: View {
             }
         } else {
             selectedOperations.insert(operation)
-        }
-    }
-}
-
-// MARK: - Difficulty Carousel
-
-struct DifficultyCarousel: View {
-    @Binding var selectedDifficulty: Difficulty
-    let selectedOperations: Set<ArithmeticQuestion.Operation>
-
-    private var currentIndex: Int {
-        Difficulty.allCases.firstIndex(of: selectedDifficulty) ?? 1
-    }
-
-    private var canGoBack: Bool {
-        currentIndex > 0
-    }
-
-    private var canGoForward: Bool {
-        currentIndex < Difficulty.allCases.count - 1
-    }
-
-    var body: some View {
-        VStack(spacing: Spacing.smd) {
-            // Swipeable card carousel
-            TabView(selection: $selectedDifficulty) {
-                ForEach(Difficulty.allCases, id: \.self) { difficulty in
-                    DifficultyCard(difficulty: difficulty, selectedOperations: selectedOperations)
-                        .tag(difficulty)
-                }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .onChange(of: selectedDifficulty) { _, _ in
-                Haptic.selection()
-                Sound.select()
-            }
-
-            // Navigation row with arrows and dots - BELOW the card
-            HStack(spacing: Spacing.lg) {
-                // Left arrow
-                Button {
-                    if canGoBack {
-                        Haptic.selection()
-                        Sound.select()
-                        withAnimation(Motion.snappy) {
-                            selectedDifficulty = Difficulty.allCases[currentIndex - 1]
-                        }
-                    }
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(canGoBack ? Theme.textPrimary : Theme.textTertiary.opacity(0.3))
-                        .frame(width: 36, height: 36)
-                        .background(Theme.surfaceElevated)
-                        .clipShape(Circle())
-                }
-                .disabled(!canGoBack)
-
-                // Page dots
-                HStack(spacing: Spacing.sm) {
-                    ForEach(Difficulty.allCases, id: \.self) { difficulty in
-                        Circle()
-                            .fill(selectedDifficulty == difficulty ? difficulty.color : Theme.textTertiary.opacity(0.4))
-                            .frame(width: selectedDifficulty == difficulty ? 10 : 8, height: selectedDifficulty == difficulty ? 10 : 8)
-                            .animation(Motion.snappy, value: selectedDifficulty)
-                            .onTapGesture {
-                                Haptic.selection()
-                                Sound.select()
-                                withAnimation(Motion.snappy) {
-                                    selectedDifficulty = difficulty
-                                }
-                            }
-                    }
-                }
-
-                // Right arrow
-                Button {
-                    if canGoForward {
-                        Haptic.selection()
-                        Sound.select()
-                        withAnimation(Motion.snappy) {
-                            selectedDifficulty = Difficulty.allCases[currentIndex + 1]
-                        }
-                    }
-                } label: {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(canGoForward ? Theme.textPrimary : Theme.textTertiary.opacity(0.3))
-                        .frame(width: 36, height: 36)
-                        .background(Theme.surfaceElevated)
-                        .clipShape(Circle())
-                }
-                .disabled(!canGoForward)
-            }
         }
     }
 }

@@ -10,10 +10,7 @@ import SwiftUI
 struct ProfileView: View {
     @EnvironmentObject var appState: AppState
 
-    @State private var isEditingName = false
-    @State private var editedName = ""
-    @State private var showAvatarPicker = false
-    @State private var showColorPicker = false
+    @State private var showEditProfile = false
 
     private var profileColorValue: Color {
         Color(hex: appState.userProfile.profileColor.hex)
@@ -36,86 +33,56 @@ struct ProfileView: View {
             .background(Theme.background)
         }
         .background(Theme.background.ignoresSafeArea(edges: .top))
-        .sheet(isPresented: $showAvatarPicker) {
-            AvatarPickerSheet(selectedAvatar: $appState.userProfile.avatarImage)
-        }
-        .sheet(isPresented: $showColorPicker) {
-            ColorPickerSheet(selectedColor: $appState.userProfile.profileColor)
-        }
-        .alert("Edit Name", isPresented: $isEditingName) {
-            TextField("Display Name", text: $editedName)
-            Button("Cancel", role: .cancel) {}
-            Button("Save") {
-                if !editedName.trimmingCharacters(in: .whitespaces).isEmpty {
-                    appState.userProfile.displayName = editedName.trimmingCharacters(in: .whitespaces)
-                }
+        .sheet(isPresented: $showEditProfile) {
+            ProfileEditSheet(
+                displayName: appState.userProfile.displayName,
+                selectedAvatar: appState.userProfile.avatarImage,
+                selectedColor: appState.userProfile.profileColor
+            ) { name, avatar, color in
+                appState.userProfile.displayName = name
+                appState.userProfile.avatarImage = avatar
+                appState.userProfile.profileColor = color
+                // Update theme with saved color
+                ThemeManager.shared.setAccentColor(hex: color.hex, lightHex: color.lightHex)
             }
-        } message: {
-            Text("Enter your display name")
         }
     }
 
     private var profileHeader: some View {
-        VStack(spacing: Spacing.md) {
-            // Avatar with edit button
-            Button {
-                showAvatarPicker = true
-            } label: {
-                ZStack {
-                    Image(appState.userProfile.avatarImage)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 120, height: 120)
+        ZStack(alignment: .topTrailing) {
+            VStack(spacing: Spacing.md) {
+                // Avatar
+                Image(appState.userProfile.avatarImage)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 120, height: 120)
 
-                    // Edit badge
-                    Circle()
-                        .fill(.white)
-                        .frame(width: 32, height: 32)
-                        .overlay(
-                            Image(systemName: "pencil")
-                                .font(.caption)
-                                .foregroundColor(profileColorValue)
-                        )
-                        .offset(x: 44, y: 44)
-                }
+                // Name
+                Text(appState.userProfile.displayName)
+                    .font(Typography.heading2)
+                    .foregroundColor(.white)
             }
+            .padding(.top, 70)
+            .padding(.bottom, Spacing.lg)
+            .frame(maxWidth: .infinity)
 
-            // Name with edit button
+            // Edit button in top right
             Button {
-                editedName = appState.userProfile.displayName
-                isEditingName = true
+                showEditProfile = true
             } label: {
-                HStack(spacing: Spacing.sm) {
-                    Text(appState.userProfile.displayName)
-                        .font(Typography.heading2)
-                        .foregroundColor(.white)
-
-                    Image(systemName: "pencil.circle.fill")
-                        .font(.title3)
-                        .foregroundColor(.white.opacity(0.8))
-                }
+                Circle()
+                    .fill(.white)
+                    .frame(width: 36, height: 36)
+                    .overlay(
+                        Image(systemName: "pencil")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(profileColorValue)
+                    )
+                    .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
             }
-
-            // Color picker button
-            Button {
-                showColorPicker = true
-            } label: {
-                HStack(spacing: Spacing.sm) {
-                    Image(systemName: "paintpalette.fill")
-                        .font(.caption)
-                    Text("Change Color")
-                        .font(Typography.caption)
-                }
-                .foregroundColor(.white.opacity(0.8))
-                .padding(.horizontal, Spacing.md)
-                .padding(.vertical, Spacing.sm)
-                .background(.white.opacity(0.2))
-                .cornerRadius(Radius.full)
-            }
+            .padding(.top, 60)
+            .padding(.trailing, Spacing.md)
         }
-        .padding(.top, 70)
-        .padding(.bottom, Spacing.lg)
-        .frame(maxWidth: .infinity)
         .background(
             LinearGradient(
                 colors: [profileColorValue, profileColorValue.opacity(0.8)],
@@ -252,6 +219,246 @@ struct SettingsRow: View {
     }
 }
 
+struct ProfileEditSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var editedName: String
+    @State private var editedAvatar: String
+    @State private var editedColor: ProfileColor
+
+    private let originalColor: ProfileColor
+
+    let onSave: (String, String, ProfileColor) -> Void
+
+    private let avatarColumns = Array(repeating: GridItem(.flexible()), count: 5)
+    private let colorColumns = Array(repeating: GridItem(.flexible()), count: 3)
+
+    init(displayName: String, selectedAvatar: String, selectedColor: ProfileColor, onSave: @escaping (String, String, ProfileColor) -> Void) {
+        _editedName = State(initialValue: displayName)
+        _editedAvatar = State(initialValue: selectedAvatar)
+        _editedColor = State(initialValue: selectedColor)
+        self.originalColor = selectedColor
+        self.onSave = onSave
+    }
+
+    private var previewColorValue: Color {
+        Color(hex: editedColor.hex)
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: Spacing.lg) {
+                    // Live Preview Section
+                    livePreviewCard
+
+                    // Display Name Section
+                    nameEditCard
+
+                    // Avatar Section
+                    avatarSelectionCard
+
+                    // Color Section
+                    colorSelectionCard
+                }
+                .padding(Spacing.lg)
+            }
+            .background(Theme.background)
+            .navigationTitle("Edit Profile")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        // Restore original color
+                        ThemeManager.shared.setAccentColor(hex: originalColor.hex, lightHex: originalColor.lightHex)
+                        dismiss()
+                    }
+                    .foregroundColor(Theme.accent)
+                }
+
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        let trimmedName = editedName.trimmingCharacters(in: .whitespaces)
+                        if !trimmedName.isEmpty {
+                            onSave(trimmedName, editedAvatar, editedColor)
+                        }
+                        dismiss()
+                    }
+                    .foregroundColor(Theme.accent)
+                    .fontWeight(.semibold)
+                }
+            }
+        }
+        .presentationDetents([.large])
+        .onAppear {
+            // Set initial preview color
+            updatePreviewColor()
+        }
+    }
+
+    private func updatePreviewColor() {
+        ThemeManager.shared.setAccentColor(hex: editedColor.hex, lightHex: editedColor.lightHex)
+    }
+
+    // MARK: - Live Preview Card
+
+    private var livePreviewCard: some View {
+        VStack(spacing: Spacing.md) {
+            // Avatar
+            Image(editedAvatar)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 100, height: 100)
+
+            // Name
+            Text(editedName.isEmpty ? "Display Name" : editedName)
+                .font(Typography.heading2)
+                .foregroundColor(.white)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, Spacing.xl)
+        .background(
+            LinearGradient(
+                colors: [previewColorValue, previewColorValue.opacity(0.8)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .cornerRadius(Radius.lg)
+        .surfaceShadow()
+    }
+
+    // MARK: - Name Edit Card
+
+    private var nameEditCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("Display Name")
+                .font(Typography.heading3)
+                .foregroundColor(Theme.textPrimary)
+
+            TextField("Enter your name", text: $editedName)
+                .font(Typography.body)
+                .foregroundColor(Theme.textPrimary)
+                .padding(Spacing.md)
+                .background(Theme.surfaceElevated)
+                .cornerRadius(Radius.md)
+                .overlay(
+                    RoundedRectangle(cornerRadius: Radius.md)
+                        .stroke(Theme.surfaceBorder, lineWidth: 1)
+                )
+        }
+        .padding(Spacing.lg)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.surface)
+        .cornerRadius(Radius.lg)
+        .surfaceShadow()
+    }
+
+    // MARK: - Avatar Selection Card
+
+    private var avatarSelectionCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("Avatar")
+                .font(Typography.heading3)
+                .foregroundColor(Theme.textPrimary)
+
+            LazyVGrid(columns: avatarColumns, spacing: Spacing.md) {
+                ForEach(UserProfile.avatarOptions, id: \.self) { avatar in
+                    Button {
+                        Haptic.light()
+                        withAnimation(Motion.spring) {
+                            editedAvatar = avatar
+                        }
+                    } label: {
+                        Image(avatar)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 60, height: 60)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: Radius.md)
+                                    .stroke(
+                                        editedAvatar == avatar ? Theme.accent : Color.clear,
+                                        lineWidth: 3
+                                    )
+                            )
+                            .scaleEffect(editedAvatar == avatar ? 1.05 : 1.0)
+                            .animation(Motion.spring, value: editedAvatar)
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+                }
+            }
+        }
+        .padding(Spacing.lg)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.surface)
+        .cornerRadius(Radius.lg)
+        .surfaceShadow()
+    }
+
+    // MARK: - Color Selection Card
+
+    private var colorSelectionCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("Profile Color")
+                .font(Typography.heading3)
+                .foregroundColor(Theme.textPrimary)
+
+            LazyVGrid(columns: colorColumns, spacing: Spacing.lg) {
+                ForEach(ProfileColor.allCases) { color in
+                    Button {
+                        Haptic.light()
+                        withAnimation(Motion.spring) {
+                            editedColor = color
+                            updatePreviewColor()
+                        }
+                    } label: {
+                        VStack(spacing: Spacing.sm) {
+                            Circle()
+                                .fill(Color(hex: color.hex))
+                                .frame(width: 70, height: 70)
+                                .overlay(
+                                    Circle()
+                                        .stroke(
+                                            editedColor == color ? .white : Color.clear,
+                                            lineWidth: 3
+                                        )
+                                )
+                                .shadow(
+                                    color: Color(hex: color.hex).opacity(editedColor == color ? 0.6 : 0.3),
+                                    radius: editedColor == color ? 12 : 8,
+                                    x: 0,
+                                    y: editedColor == color ? 6 : 4
+                                )
+                                .scaleEffect(editedColor == color ? 1.05 : 1.0)
+                                .animation(Motion.spring, value: editedColor)
+
+                            Text(color.rawValue)
+                                .font(Typography.caption)
+                                .foregroundColor(Theme.textPrimary)
+                        }
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+                }
+            }
+        }
+        .padding(Spacing.lg)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.surface)
+        .cornerRadius(Radius.lg)
+        .surfaceShadow()
+    }
+}
+
+// MARK: - Scale Button Style
+
+struct ScaleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.92 : 1.0)
+            .animation(Motion.snappy, value: configuration.isPressed)
+    }
+}
+
 struct AvatarPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var selectedAvatar: String
@@ -270,22 +477,18 @@ struct AvatarPickerSheet: View {
                             Image(avatar)
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 50, height: 50)
-                                .padding(5)
-                                .background(
-                                    selectedAvatar == avatar ?
-                                    Theme.accent.opacity(0.2) :
-                                    Theme.surfaceElevated
-                                )
-                                .cornerRadius(Radius.md)
+                                .frame(width: 60, height: 60)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: Radius.md)
                                         .stroke(
                                             selectedAvatar == avatar ? Theme.accent : Color.clear,
-                                            lineWidth: 2
+                                            lineWidth: 3
                                         )
                                 )
+                                .scaleEffect(selectedAvatar == avatar ? 1.05 : 1.0)
+                                .animation(Motion.spring, value: selectedAvatar)
                         }
+                        .buttonStyle(ScaleButtonStyle())
                     }
                 }
                 .padding(Spacing.md)

@@ -15,7 +15,7 @@ struct GoalSelectionView: View {
     @State private var contentOpacity: Double = 0
 
     var body: some View {
-        ScrollView {
+        VStack(spacing: 0) {
             VStack(spacing: Spacing.lg) {
                 // Header
                 VStack(spacing: Spacing.smd) {
@@ -49,12 +49,9 @@ struct GoalSelectionView: View {
                 }
                 .padding(.horizontal, Spacing.lg)
 
-                Spacer(minLength: 120)
+                Spacer()
             }
-        }
-        .scrollIndicators(.hidden)
-        .background(Theme.background)
-        .safeAreaInset(edge: .bottom) {
+
             // Navigation buttons
             VStack(spacing: Spacing.smd) {
                 PrimaryButton(title: selectedGoal != nil ? "Continue" : "Select a Goal", isEnabled: selectedGoal != nil) {
@@ -68,15 +65,9 @@ struct GoalSelectionView: View {
                 }
             }
             .padding(.horizontal, Spacing.lg)
-            .padding(.vertical, Spacing.md)
-            .background(
-                LinearGradient(
-                    colors: [Theme.background.opacity(0), Theme.background],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            )
+            .padding(.bottom, Spacing.md)
         }
+        .background(Theme.background)
         .opacity(contentOpacity)
         .onAppear {
             withAnimation(Motion.ease(Motion.smooth)) {

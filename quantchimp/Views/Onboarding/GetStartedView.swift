@@ -15,100 +15,68 @@ struct GetStartedView: View {
 
     @State private var contentOpacity: Double = 0
     @State private var mascotScale: CGFloat = 0.5
-    @State private var showConfetti: Bool = false
-    @State private var confettiPieces: [ConfettiPiece] = []
-    @State private var viewSize: CGSize = .zero
 
     var body: some View {
-        ZStack {
-            // Capture view size
-            GeometryReader { geometry in
-                Color.clear
-                    .onAppear {
-                        viewSize = geometry.size
-                    }
-                    .onChange(of: geometry.size) { _, newSize in
-                        viewSize = newSize
-                    }
+        VStack(spacing: 0) {
+            Spacer()
+
+            // Celebration mascot
+            ZStack {
+                // Glow effect
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                Theme.accent.opacity(0.3),
+                                Theme.accent.opacity(0.1),
+                                Color.clear
+                            ],
+                            center: .center,
+                            startRadius: 60,
+                            endRadius: 140
+                        )
+                    )
+                    .frame(width: 280, height: 280)
+
+                Image("monkey_excellent")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 180, height: 180)
             }
+            .scaleEffect(mascotScale)
 
-            // Confetti layer
-            ForEach(confettiPieces) { piece in
-                ConfettiView(piece: piece, viewSize: viewSize)
+            Spacer()
+                .frame(height: 40)
+
+            // Title
+            VStack(spacing: Spacing.smd) {
+                Text("You're All Set!")
+                    .font(Typography.displayMedium)
+                    .foregroundStyle(Theme.accentGradient)
+
+                Text("Your training journey begins now")
+                    .font(Typography.heading3)
+                    .foregroundColor(Theme.textPrimary)
+                    .multilineTextAlignment(.center)
             }
+            .padding(.horizontal, Spacing.xl)
 
-            VStack(spacing: 0) {
-                Spacer()
+            Spacer()
 
-                // Celebration mascot
-                ZStack {
-                    // Glow
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    Theme.accent.opacity(0.4),
-                                    Theme.accent.opacity(0.1),
-                                    Color.clear
-                                ],
-                                center: .center,
-                                startRadius: 40,
-                                endRadius: 140
-                            )
-                        )
-                        .frame(width: 280, height: 280)
-
-                    // Circle
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [Theme.accent.opacity(0.25), Theme.xp.opacity(0.2)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 160, height: 160)
-                        .overlay(
-                            Circle()
-                                .stroke(Theme.accent.opacity(0.4), lineWidth: 4)
-                        )
-
-                    Text("🎉")
-                        .font(.system(size: 80))
-                }
-                .scaleEffect(mascotScale)
-
-                Spacer()
-                    .frame(height: 40)
-
-                // Title
-                VStack(spacing: Spacing.md) {
-                    Text("You're All Set!")
-                        .font(Typography.displaySmall)
-                        .foregroundColor(Theme.textPrimary)
-
-                    Text("Your training journey begins now")
-                        .font(Typography.heading3)
-                        .foregroundColor(Theme.textSecondary)
+            // Navigation buttons
+            VStack(spacing: Spacing.smd) {
+                PrimaryButton(title: "Start Training") {
+                    onComplete()
                 }
 
-                Spacer()
-
-                // Navigation buttons
-                VStack(spacing: Spacing.smd) {
-                    PrimaryButton(title: "Start Training") {
-                        onComplete()
-                    }
-
-                    TertiaryButton(title: "Back") {
-                        onBack()
-                    }
+                TertiaryButton(title: "Back") {
+                    onBack()
                 }
-                .padding(.horizontal, Spacing.lg)
-                .padding(.bottom, Spacing.lg)
             }
-            .opacity(contentOpacity)
+            .padding(.horizontal, Spacing.lg)
+            .padding(.bottom, Spacing.lg)
         }
+        .opacity(contentOpacity)
         .background(Theme.background)
         .onAppear {
             startAnimations()
@@ -152,7 +120,7 @@ struct GetStartedView: View {
             }
         }
         .padding(Spacing.lg)
-        .cardStyle()
+        .cardStyle(hasBorder: false)
     }
 
     private var reminderDescription: String {
@@ -188,28 +156,10 @@ struct GetStartedView: View {
             mascotScale = 1.0
         }
 
-        // Trigger confetti
+        // Play celebration sound and haptic
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-            triggerConfetti()
-        }
-    }
-
-    private func triggerConfetti() {
-        showConfetti = true
-
-        // Play celebration sound
-        Sound.celebration()
-        Haptic.success()
-
-        // Create confetti pieces
-        let width = viewSize.width > 0 ? viewSize.width : 400
-        for i in 0..<50 {
-            let piece = ConfettiPiece(
-                id: i,
-                x: CGFloat.random(in: 0...width),
-                color: [Theme.accent, Theme.xp, Theme.level, Theme.sprint, Theme.success, Theme.streak].randomElement() ?? Theme.accent
-            )
-            confettiPieces.append(piece)
+            Sound.celebration()
+            Haptic.success()
         }
     }
 }
@@ -239,55 +189,6 @@ struct SummaryRow: View {
                 .font(Typography.bodyBold)
                 .foregroundColor(Theme.textPrimary)
         }
-    }
-}
-
-// MARK: - Confetti
-
-struct ConfettiPiece: Identifiable {
-    let id: Int
-    let x: CGFloat
-    let color: Color
-}
-
-struct ConfettiView: View {
-    let piece: ConfettiPiece
-    let viewSize: CGSize
-
-    @State private var yOffset: CGFloat = -50
-    @State private var rotation: Double = 0
-    @State private var opacity: Double = 1
-
-    private var viewWidth: CGFloat {
-        viewSize.width > 0 ? viewSize.width : 400
-    }
-
-    private var viewHeight: CGFloat {
-        viewSize.height > 0 ? viewSize.height : 800
-    }
-
-    var body: some View {
-        Rectangle()
-            .fill(piece.color)
-            .frame(width: CGFloat.random(in: 6...10), height: CGFloat.random(in: 10...16))
-            .cornerRadius(2)
-            .rotationEffect(.degrees(rotation))
-            .offset(x: piece.x - viewWidth / 2, y: yOffset)
-            .opacity(opacity)
-            .onAppear {
-                withAnimation(
-                    .easeOut(duration: Double.random(in: 2.0...3.5))
-                ) {
-                    yOffset = viewHeight + 100
-                    rotation = Double.random(in: 360...720)
-                }
-
-                withAnimation(
-                    .easeOut(duration: 2.0).delay(1.5)
-                ) {
-                    opacity = 0
-                }
-            }
     }
 }
 

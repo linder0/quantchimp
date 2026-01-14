@@ -140,7 +140,7 @@ struct DailyGoalView: View {
                 }
             }
             .padding(Spacing.lg)
-            .cardStyle(cornerRadius: Radius.lg)
+            .cardStyle(cornerRadius: Radius.lg, hasBorder: false)
         }
     }
 
@@ -207,7 +207,7 @@ struct DailyGoalView: View {
                     }
                 }
             }
-            .cardStyle(cornerRadius: Radius.lg)
+            .cardStyle(cornerRadius: Radius.lg, hasBorder: false)
         }
     }
 

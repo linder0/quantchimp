@@ -9,12 +9,11 @@ import SwiftUI
 
 struct SplashView: View {
     @State private var showContent = false
-    @StateObject private var themeManager = ThemeManager.shared
 
     var body: some View {
         ZStack {
             // Solid brand color background
-            themeManager.accent
+            ThemeManager.shared.accent
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {

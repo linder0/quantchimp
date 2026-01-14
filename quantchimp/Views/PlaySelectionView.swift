@@ -57,36 +57,70 @@ struct PlaySelectionView: View {
                 .background(Theme.surfaceGradient)
 
                 // Game mode options
-                VStack(spacing: Spacing.smd) {
-                    // Active game modes - side by side cards
-                    HStack(spacing: Spacing.smd) {
-                        ForEach(GameMode.activeModesForCards) { mode in
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: Spacing.lg) {
+                        // CLASSIC Section
+                        VStack(spacing: Spacing.smd) {
+                            SectionCard(
+                                icon: "brain.head.profile",
+                                title: "CLASSIC",
+                                description: "Practice your mental math skills"
+                            )
+
+                            // Classic game modes - side by side cards
+                            HStack(spacing: Spacing.smd) {
+                                ForEach(GameMode.activeModesForCards) { mode in
+                                    PlayOptionCard(
+                                        imageName: mode.imageName,
+                                        title: mode.rawValue,
+                                        subtitle: mode.subtitle(for: appState),
+                                        isCompleted: mode.isCompleted(for: appState),
+                                        imageOffset: mode.imageOffset,
+                                        imageSize: mode.imageSize
+                                    ) {
+                                        dismiss()
+                                        handleGameModeSelection(mode)
+                                    }
+                                }
+                            }
+                        }
+
+                        // POKER Section
+                        VStack(spacing: Spacing.smd) {
+                            SectionCard(
+                                icon: "suit.spade.fill",
+                                title: "POKER",
+                                description: "Combine math with poker hands"
+                            )
+
+                            // Poker game mode
                             PlayOptionCard(
+                                imageName: GameMode.poker.imageName,
+                                title: GameMode.poker.rawValue,
+                                subtitle: GameMode.poker.subtitle(for: appState),
+                                isCompleted: false,
+                                imageOffset: GameMode.poker.imageOffset,
+                                imageSize: GameMode.poker.imageSize
+                            ) {
+                                dismiss()
+                                handleGameModeSelection(.poker)
+                            }
+                        }
+
+                        // Future modes (disabled)
+                        ForEach(GameMode.disabledModesForTiles) { mode in
+                            PlayOptionTile(
                                 imageName: mode.imageName,
                                 title: mode.rawValue,
                                 subtitle: mode.subtitle(for: appState),
-                                isCompleted: mode.isCompleted(for: appState),
-                                imageOffset: mode.imageOffset,
-                                imageSize: mode.imageSize
-                            ) {
-                                dismiss()
-                                handleGameModeSelection(mode)
-                            }
+                                isDisabled: true
+                            ) {}
                         }
                     }
-
-                    // Future modes (disabled)
-                    ForEach(GameMode.disabledModesForTiles) { mode in
-                        PlayOptionTile(
-                            imageName: mode.imageName,
-                            title: mode.rawValue,
-                            subtitle: mode.subtitle(for: appState),
-                            isDisabled: true
-                        ) {}
-                    }
+                    .padding(.horizontal, Spacing.lg)
+                    .padding(.top, Spacing.lg)
+                    .padding(.bottom, Spacing.xl)
                 }
-                .padding(.horizontal, Spacing.lg)
-                .padding(.top, Spacing.lg)
 
                 Spacer()
             }
@@ -99,9 +133,46 @@ struct PlaySelectionView: View {
             onSelectDaily()
         case .sprint:
             onSelectSprint()
+        case .poker:
+            break // Handled directly in HomeView
         case .tournament, .challenge:
             break // Disabled modes
         }
+    }
+}
+
+// MARK: - Section Card Component
+struct SectionCard: View {
+    let icon: String
+    let title: String
+    let description: String
+
+    var body: some View {
+        HStack(spacing: Spacing.md) {
+            // Icon
+            Image(systemName: icon)
+                .font(.system(size: 24, weight: .semibold))
+                .foregroundColor(Theme.accent)
+                .frame(width: 44, height: 44)
+                .background(Theme.accent.opacity(0.15))
+                .clipShape(Circle())
+
+            // Text content
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text(title)
+                    .font(Typography.bodyBold)
+                    .foregroundColor(Theme.textPrimary)
+
+                Text(description)
+                    .font(Typography.caption)
+                    .foregroundColor(Theme.textSecondary)
+            }
+
+            Spacer()
+        }
+        .padding(Spacing.md)
+        .background(Theme.surfaceElevated)
+        .cornerRadius(Radius.md)
     }
 }
 

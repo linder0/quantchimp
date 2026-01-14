@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct HomeView: View {
     @EnvironmentObject var appState: AppState
@@ -15,6 +16,11 @@ struct HomeView: View {
     @State private var initialScrollOffset: CGFloat = 0
     @State private var showSprintFlow = false
     @State private var showDailyPuzzle = false
+    @State private var showPokerSprint = false
+    @State private var countdownText: String = ""
+
+    // Timer to update countdown every second
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     // Header transition thresholds
     private let collapseThreshold: CGFloat = 60
@@ -42,7 +48,7 @@ struct HomeView: View {
                 VStack(spacing: 0) {
                     // Spacer for header - DISABLED scroll tracking
                     Color.clear
-                        .frame(height: 250) // Fixed height when transform is disabled
+                        .frame(height: 220) // Reduced from 250 for tighter spacing
                         // DISABLED: Scroll tracking for header transform
                         // .overlay(
                         //     GeometryReader { geometry in
@@ -61,7 +67,7 @@ struct HomeView: View {
                         gameModesSection
                     }
                     .padding(.horizontal, Spacing.md)
-                    .padding(.top, Spacing.md)
+                    .padding(.top, Spacing.xs)
                     .padding(.bottom, Spacing.lg)
                 }
             }
@@ -88,6 +94,15 @@ struct HomeView: View {
         }
         .fullScreenCover(isPresented: $showDailyPuzzle) {
             DailyPuzzleView()
+        }
+        .fullScreenCover(isPresented: $showPokerSprint) {
+            PokerSprintFlowView()
+        }
+        .onAppear {
+            updateCountdown()
+        }
+        .onReceive(timer) { _ in
+            updateCountdown()
         }
     }
 
@@ -133,6 +148,7 @@ struct HomeView: View {
                         .font(Typography.label)
                         .foregroundColor(.white)
                 }
+                .fixedSize()
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
                 .background(
@@ -151,6 +167,7 @@ struct HomeView: View {
                         .font(Typography.label)
                         .foregroundColor(.white)
                 }
+                .fixedSize()
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
                 .background(
@@ -185,16 +202,18 @@ struct HomeView: View {
 
     private var gameModesSection: some View {
         VStack(alignment: .leading, spacing: Spacing.smd) {
-            SectionHeader(title: "Play")
+            SectionHeader(title: "Classic")
 
-            // Active game modes - side by side cards
+            // Daily and Sprint modes - side by side cards
             HStack(spacing: Spacing.smd) {
-                ForEach(GameMode.activeModesForCards) { mode in
+                ForEach([GameMode.daily, GameMode.sprint], id: \.self) { mode in
                     PlayOptionCard(
                         imageName: mode.imageName,
                         title: mode.rawValue,
                         subtitle: mode.subtitle(for: appState),
                         isCompleted: mode.isCompleted(for: appState),
+                        isDisabled: mode == .daily && appState.completedDailyToday,
+                        countdownText: mode == .daily && appState.completedDailyToday ? countdownText : nil,
                         imageOffset: mode.imageOffset,
                         imageSize: mode.imageSize
                     ) {
@@ -202,22 +221,53 @@ struct HomeView: View {
                     }
                 }
             }
+
+            // Poker section
+            SectionHeader(title: "Poker")
+                .padding(.top, Spacing.md)
+
+            HStack(spacing: Spacing.smd) {
+                PlayOptionCard(
+                    imageName: GameMode.poker.imageName,
+                    title: GameMode.poker.rawValue,
+                    subtitle: GameMode.poker.subtitle(for: appState),
+                    isCompleted: false,
+                    imageOffset: GameMode.poker.imageOffset,
+                    imageSize: GameMode.poker.imageSize
+                ) {
+                    handleGameModeSelection(.poker)
+                }
+
+                // Empty spacer to match the 2-column layout
+                Color.clear
+                    .frame(maxWidth: .infinity)
+            }
         }
     }
 
     private func handleGameModeSelection(_ mode: GameMode) {
         switch mode {
         case .daily:
-            showDailyPuzzle = true
+            if !appState.completedDailyToday {
+                showDailyPuzzle = true
+            }
         case .sprint:
             showSprintFlow = true
+        case .poker:
+            showPokerSprint = true
         case .tournament, .challenge:
             break // Disabled modes
         }
     }
 
+    private func updateCountdown() {
+        let timeRemaining = DateHelpers.timeUntilMidnight()
+        countdownText = DateHelpers.formatCountdown(timeRemaining)
+    }
+
     private var featuredQuestCard: some View {
-        let quest = closestQuest
+        let quest = QuestManager.closestIncompleteQuest(appState: appState, statsManager: statsManager)
+        let progress = quest.currentProgress(appState: appState, statsManager: statsManager)
 
         return VStack(alignment: .leading, spacing: Spacing.xs) {
             // Title and reward
@@ -237,6 +287,7 @@ struct HomeView: View {
                         .font(Typography.caption)
                         .foregroundColor(.white)
                 }
+                .fixedSize()
             }
 
             // Progress bar
@@ -252,77 +303,20 @@ struct HomeView: View {
                         RoundedRectangle(cornerRadius: Radius.sm)
                             .fill(.white)
                             .frame(
-                                width: geometry.size.width * CGFloat(min(quest.progress, quest.total)) / CGFloat(quest.total),
+                                width: geometry.size.width * CGFloat(min(progress, quest.totalRequired)) / CGFloat(quest.totalRequired),
                                 height: 6
                             )
                     }
                 }
                 .frame(height: 6)
 
-                Text("\(quest.progress)/\(quest.total)")
+                Text("\(progress)/\(quest.totalRequired)")
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.white.opacity(0.8))
-                    .frame(width: 35)
+                    .fixedSize()
             }
         }
         .padding(.horizontal, Spacing.md)
-    }
-
-    private struct QuestInfo {
-        let icon: String
-        let title: String
-        let description: String
-        let progress: Int
-        let total: Int
-        let xpReward: Int
-        var progressPercentage: Double {
-            Double(progress) / Double(total)
-        }
-    }
-
-    private var closestQuest: QuestInfo {
-        let totalQuestionsAnswered = statsManager.sessionHistory.reduce(0) { $0 + $1.questionsAnswered }
-
-        let quests = [
-            QuestInfo(
-                icon: "flame.fill",
-                title: "Week Warrior",
-                description: "Maintain a 7-day streak",
-                progress: statsManager.currentStreak,
-                total: 7,
-                xpReward: 100
-            ),
-            QuestInfo(
-                icon: "bolt.fill",
-                title: "Speed Demon",
-                description: "Complete 10 sprint sessions",
-                progress: statsManager.sprintCompleted,
-                total: 10,
-                xpReward: 150
-            ),
-            QuestInfo(
-                icon: "100.square.fill",
-                title: "Century Club",
-                description: "Answer 100 questions",
-                progress: totalQuestionsAnswered,
-                total: 100,
-                xpReward: 200
-            ),
-            QuestInfo(
-                icon: "trophy.fill",
-                title: "XP Master",
-                description: "Earn 2000 XP",
-                progress: appState.xp,
-                total: 2000,
-                xpReward: 500
-            )
-        ]
-
-        // Find the incomplete quest with the highest progress percentage
-        let incompleteQuests = quests.filter { $0.progress < $0.total }
-
-        return incompleteQuests.max(by: { $0.progressPercentage < $1.progressPercentage })
-            ?? quests.first! // Fallback to first quest if all are complete
     }
 
 }

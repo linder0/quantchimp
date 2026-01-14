@@ -36,35 +36,25 @@ struct PlayOptionCard: View {
                 // Main card content
                 VStack(spacing: 0) {
                     // Image area
-                    ZStack(alignment: .topTrailing) {
-                        Image(imageName)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: imageSize)
-                            .offset(y: imageOffset)
-                            .opacity(isDisabled ? 0.4 : 1.0)
-
-                        // Completed checkmark
-                        if isCompleted {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.title2)
-                                .foregroundColor(Theme.success)
-                                .padding(Spacing.sm)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 150)
-                    .clipped()
+                    Image(imageName)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: imageSize)
+                        .offset(y: imageOffset)
+                        .opacity(isDisabled ? 0.4 : 1.0)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 150)
+                        .clipped()
 
                     // Text area with top border
                     VStack(spacing: Spacing.xs) {
                         Text(title)
                             .font(Typography.headline)
-                            .foregroundColor(Theme.textPrimary)
+                            .foregroundColor(isDisabled ? Theme.textTertiary : Theme.textPrimary)
 
                         Text(subtitle)
                             .font(Typography.caption)
-                            .foregroundColor(Theme.textSecondary)
+                            .foregroundColor(isDisabled ? Theme.textTertiary : Theme.textSecondary)
                     }
                     .padding(.top, Spacing.lg)
                     .padding(.bottom, Spacing.md)
@@ -79,10 +69,28 @@ struct PlayOptionCard: View {
                 }
                 .background(Theme.surfaceElevated)
                 .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
+
+                // Timer overlay (when disabled)
+                if let countdownText = countdownText, isDisabled {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: Radius.lg)
+                            .fill(Color.black.opacity(0.3))
+
+                        HStack(spacing: Spacing.xs) {
+                            Image(systemName: "clock.fill")
+                                .font(.title3)
+                                .foregroundColor(.white)
+                            Text(countdownText)
+                                .font(Typography.headline)
+                                .foregroundColor(.white)
+                        }
+                    }
+                }
             }
         }
         .buttonStyle(.plain)
-        .pressable(scale: 0.97)
+        .pressable(scale: isDisabled ? 1.0 : 0.97)
+        .opacity(isDisabled ? 0.6 : 1.0)
     }
 }
 

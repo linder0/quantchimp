@@ -11,6 +11,7 @@ import SwiftUI
 enum GameMode: String, Codable, CaseIterable, Identifiable {
     case daily = "Daily Puzzle"
     case sprint = "Sprint"
+    case poker = "Poker Sprint"
     case tournament = "Tournaments"
     case challenge = "Challenge a Friend"
 
@@ -20,6 +21,7 @@ enum GameMode: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .daily: return "brain.head.profile"
         case .sprint: return "timer"
+        case .poker: return "suit.spade.fill"
         case .tournament: return "trophy"
         case .challenge: return "person.2"
         }
@@ -29,6 +31,7 @@ enum GameMode: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .daily: return "monkey_daily_puzzle"
         case .sprint: return "monkey_sprint"
+        case .poker: return "monkey_poker"
         case .tournament: return "monkey_tournament"
         case .challenge: return "monkey_challenge"
         }
@@ -38,6 +41,7 @@ enum GameMode: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .daily: return Theme.daily
         case .sprint: return Theme.sprint
+        case .poker: return Theme.level
         case .tournament: return Theme.level
         case .challenge: return Theme.accent
         }
@@ -48,6 +52,7 @@ enum GameMode: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .daily: return 10
         case .sprint: return 20
+        case .poker: return 15
         case .tournament: return 15
         case .challenge: return 15
         }
@@ -58,6 +63,7 @@ enum GameMode: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .daily: return 140
         case .sprint: return 160
+        case .poker: return 140
         case .tournament: return 140
         case .challenge: return 140
         }
@@ -66,7 +72,7 @@ enum GameMode: String, Codable, CaseIterable, Identifiable {
     /// Whether this game mode is currently enabled
     var isEnabled: Bool {
         switch self {
-        case .daily, .sprint: return true
+        case .daily, .sprint, .poker: return true
         case .tournament, .challenge: return false
         }
     }
@@ -80,6 +86,8 @@ enum GameMode: String, Codable, CaseIterable, Identifiable {
             return appState.completedDailyToday ? "Completed" : "Ready to play"
         case .sprint:
             return "Speed challenge"
+        case .poker:
+            return "Swipe the winner"
         case .tournament:
             return "Coming soon"
         case .challenge:

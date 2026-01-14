@@ -22,31 +22,13 @@ struct WelcomeView: View {
             Spacer()
 
             // Mascot with animation
-            ZStack {
-                // Glow effect
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                Theme.accent.opacity(0.3),
-                                Theme.accent.opacity(0.1),
-                                Color.clear
-                            ],
-                            center: .center,
-                            startRadius: 60,
-                            endRadius: 140
-                        )
-                    )
-                    .frame(width: 280, height: 280)
-
-                Image("monkey_welcome")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 180, height: 180)
-                    .offset(y: mascotBounce)
-            }
-            .scaleEffect(mascotScale)
-            .opacity(mascotOpacity)
+            Image("monkey_welcome")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 180, height: 180)
+                .offset(y: mascotBounce)
+                .scaleEffect(mascotScale)
+                .opacity(mascotOpacity)
 
             Spacer()
                 .frame(height: 40)

@@ -1,13 +1,13 @@
 //
-//  SprintResultView.swift
+//  PokerResultView.swift
 //  quantchimp
 //
-//  Sprint result view - Full screen immersive modal
+//  Poker sprint result view - Full screen immersive modal
 //
 
 import SwiftUI
 
-struct SprintResultView: View {
+struct PokerResultView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var statsManager: StatsManager
 
@@ -26,7 +26,14 @@ struct SprintResultView: View {
     }
 
     private var xpEarned: Int {
-        calculateXPEarned(correctCount: correctCount)
+        // Difficulty multiplier for poker
+        let multiplier: Int
+        switch difficulty {
+        case .easy: multiplier = 5
+        case .medium: multiplier = 8
+        case .hard: multiplier = 12
+        }
+        return correctCount * multiplier
     }
 
     private var performance: PerformanceEvaluator.PerformanceResult {
@@ -92,7 +99,7 @@ struct SprintResultView: View {
                 .scaledToFit()
                 .frame(width: 120, height: 120)
 
-            Text("Sprint Complete!")
+            Text("Poker Sprint Complete!")
                 .font(Typography.displaySmall)
                 .foregroundColor(Theme.textPrimary)
 
@@ -121,14 +128,14 @@ struct SprintResultView: View {
                 icon: "percent",
                 value: formatAccuracy(accuracy),
                 label: "Accuracy",
-                color: Theme.sprint
+                color: Theme.accent
             )
 
             StatCardLarge(
                 icon: "number",
                 value: "\(totalAttempts)",
                 label: "Attempts",
-                color: Theme.accent
+                color: Theme.level
             )
         }
     }
@@ -140,7 +147,7 @@ struct SprintResultView: View {
 
     private var actionButtons: some View {
         VStack(spacing: Spacing.smd) {
-            PrimaryButton(title: "Play Again", color: Theme.sprint) {
+            PrimaryButton(title: "Play Again", color: Theme.accent) {
                 onPlayAgain()
             }
 
@@ -153,14 +160,14 @@ struct SprintResultView: View {
     private func updateXPIfNeeded() {
         guard !hasUpdatedXP else { return }
         hasUpdatedXP = true
-        appState.addArithmeticXP(correctCount: correctCount)
+        appState.xp += xpEarned
 
         // Play celebration sound for good performance
         if PerformanceEvaluator.shouldCelebrate(correctCount: correctCount) {
             Sound.celebration()
         }
 
-        // Record session to stats
+        // Record session to stats (use sprint mode for now, could add poker mode later)
         let session = SessionRecord(
             mode: .sprint,
             questionsAnswered: totalAttempts,
@@ -172,11 +179,11 @@ struct SprintResultView: View {
 }
 
 #Preview {
-    SprintResultView(
+    PokerResultView(
         correctCount: 12,
         totalAttempts: 15,
         difficulty: .medium,
-        duration: .blitz,
+        duration: .bullet,
         onDismiss: {},
         onPlayAgain: {}
     )

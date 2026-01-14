@@ -29,6 +29,7 @@ struct XPEarnedBadge: View {
                 .font(style == .large ? Typography.heading2 : Typography.headline)
                 .foregroundColor(Theme.textPrimary)
         }
+        .fixedSize()
         .padding(.horizontal, style == .large ? Spacing.lg : Spacing.smd)
         .padding(.vertical, style == .large ? Spacing.lg : Spacing.smd)
         .background(
@@ -72,4 +73,3 @@ struct XPEarnedBadge: View {
     .padding(Spacing.lg)
     .background(Theme.background)
 }
-

@@ -6,31 +6,34 @@
 //
 
 import SwiftUI
+import Foundation
+import Combine
 
 // MARK: - Theme Manager
 
 /// Dynamic theme manager that adapts to user's selected accent color
-@MainActor
-class ThemeManager: ObservableObject {
+final class ThemeManager: ObservableObject {
     static let shared = ThemeManager()
 
-    @Published var accentColor: ProfileColor = .blue
+    @Published private(set) var accentHex: String = "3B82F6"
+    @Published private(set) var accentLightHex: String = "60A5FA"
 
     private init() {}
 
     /// Set the accent color from user profile
-    func setAccentColor(_ color: ProfileColor) {
-        accentColor = color
+    func setAccentColor(hex: String, lightHex: String) {
+        accentHex = hex
+        accentLightHex = lightHex
     }
 
     /// Get the primary accent color
     var accent: Color {
-        Color(hex: accentColor.hex)
+        Color(hex: accentHex)
     }
 
     /// Get a lighter tint of the accent color (for gradients)
     var accentLight: Color {
-        Color(hex: accentColor.lightHex)
+        Color(hex: accentLightHex)
     }
 
     /// Accent gradient for XP bars, highlights
@@ -40,11 +43,6 @@ class ThemeManager: ObservableObject {
             startPoint: .leading,
             endPoint: .trailing
         )
-    }
-
-    /// Success color (matches accent for consistency)
-    var success: Color {
-        accent
     }
 }
 
@@ -96,12 +94,10 @@ enum Theme {
 
     // MARK: - Semantic Colors
 
-    /// Correct answers - Use ThemeManager.shared.success for dynamic color
-    static var success: Color {
-        ThemeManager.shared.success
-    }
+    /// Correct answers - Hardcoded green
+    static let success = Color(hex: "10B981")
 
-    /// Wrong answers - Coral red
+    /// Wrong answers - Hardcoded red
     static let error = Color(hex: "EF4444")
 
     /// Warnings, caution - Amber

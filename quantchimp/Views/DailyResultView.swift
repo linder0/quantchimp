@@ -166,7 +166,10 @@ struct DailyResultView: View {
     private var explanationCard: some View {
         VStack(alignment: .leading, spacing: Spacing.smd) {
             HStack {
-                Image(systemName: "lightbulb.fill")
+                Image("icon_hint")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 20, height: 20)
                     .foregroundColor(Theme.xp)
                 Text("Explanation")
                     .font(Typography.headline)

@@ -22,12 +22,14 @@ struct XPBar: View {
                     Text("Level \(level)")
                         .font(Typography.label)
                         .foregroundColor(Theme.accent)
+                        .fixedSize()
 
                     Spacer()
 
                     Text("\(xpToNext) XP to next level")
                         .font(Typography.caption)
                         .foregroundColor(Theme.textSecondary)
+                        .fixedSize()
                 }
             }
 

@@ -97,7 +97,8 @@ class AppState: ObservableObject {
 
     /// Sync theme color with ThemeManager
     private func syncThemeColor() {
-        ThemeManager.shared.setAccentColor(userProfile.profileColor)
+        let color = userProfile.profileColor
+        ThemeManager.shared.setAccentColor(hex: color.hex, lightHex: color.lightHex)
     }
 
     // MARK: - Streak Logic

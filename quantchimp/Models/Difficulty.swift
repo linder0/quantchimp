@@ -77,8 +77,17 @@ enum Difficulty: String, CaseIterable {
         "inverse of ×"
     }
 
+    // MARK: - Poker Descriptions
+
+    var pokerDescription: String {
+        switch self {
+        case .easy: return "Clear winners (Flush vs Pair)"
+        case .medium: return "Moderate gaps (Straight vs Two Pair)"
+        case .hard: return "Close calls (AK vs AQ)"
+        }
+    }
+
     var isDefault: Bool {
         self == .medium
     }
 }
-

@@ -35,6 +35,15 @@ enum UserGoal: String, Codable, CaseIterable, Identifiable {
         }
     }
 
+    var monkeyImage: String {
+        switch self {
+        case .quantCareer: return "monkey_excellent"
+        case .interviewPrep: return "monkey_outstanding"
+        case .mentalMath: return "monkey_great"
+        case .brainTraining: return "monkey_good"
+        }
+    }
+
     var description: String {
         switch self {
         case .quantCareer:

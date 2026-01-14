@@ -112,19 +112,9 @@ struct DailyPuzzleView: View {
     // MARK: - Header
 
     private var header: some View {
-        HStack {
-            IconButton(icon: "xmark", backgroundColor: Theme.surfaceElevated, size: 36) {
-                dismiss()
-            }
-
-            Spacer()
-
-            Text("Daily Puzzle")
-                .font(Typography.headline)
-                .foregroundColor(Theme.textPrimary)
-
-            Spacer()
-
+        ModalHeader(title: "Daily Puzzle") {
+            dismiss()
+        } trailing: {
             // Hint button - fades when used
             Button {
                 if !showHint && !hasSubmitted {
@@ -142,7 +132,6 @@ struct DailyPuzzleView: View {
             }
             .disabled(showHint || hasSubmitted)
         }
-        .padding(.horizontal, Spacing.md)
     }
 
     // MARK: - Answer Input

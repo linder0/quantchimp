@@ -134,6 +134,8 @@ class StatsManager: ObservableObject {
             dailyCompleted += 1
         case .sprint:
             sprintCompleted += 1
+        case .poker:
+            sprintCompleted += 1 // Count poker sprints with regular sprints
         case .tournament:
             break // Future mode - not yet implemented
         case .challenge:
